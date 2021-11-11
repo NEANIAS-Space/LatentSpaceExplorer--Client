@@ -1,0 +1,32 @@
+{
+    "globals": {
+        "React": true,
+        "PropTypes": true
+    },
+    "extends": ["next", "airbnb", "prettier", "plugin:cypress/recommended"],
+    "env": {
+        "node": true,
+        "browser": true,
+        "es6": true,
+        "jest": true
+    },
+    "plugins": ["react-hooks", "cypress"],
+    "rules": {
+        "indent": [
+            2,
+            4,
+            {
+                "SwitchCase": 1,
+                "ignoredNodes": ["ConditionalExpression"]
+            }
+        ],
+        "import/no-unresolved": [2, { "ignore": ["app/*", "style/*"] }],
+        "react/jsx-filename-extension": [2, { "extensions": [".js", ".jsx"] }],
+        "react/jsx-props-no-spreading": "off",
+        "jsx-a11y/anchor-is-valid": "off"
+    },
+    "parserOptions": {
+        "allowImportExportEverywhere": true,
+        "sourceType": "module"
+    }
+}

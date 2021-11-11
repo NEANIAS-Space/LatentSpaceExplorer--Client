@@ -1,0 +1,7 @@
+FROM lucaspuerari/client:v0.0.3-base
+
+ENV ENVIRONMENT staging
+
+COPY ./src/.env.staging .
+
+CMD ["npm", "run", "dev"]

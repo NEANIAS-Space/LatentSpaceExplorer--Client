@@ -1,0 +1,8 @@
+FROM lucaspuerari/client:v0.0.3-base
+
+ENV ENVIRONMENT production
+
+COPY ./src/.env.production .
+
+RUN ["npm", "run", "build"]
+CMD ["npm", "run", "start"]

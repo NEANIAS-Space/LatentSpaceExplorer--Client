@@ -1,0 +1,7 @@
+FROM lucaspuerari/client:v0.0.3-base
+
+ENV ENVIRONMENT local
+
+COPY ./src/.env.local .
+
+CMD ["npm", "run", "dev"]

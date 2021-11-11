@@ -1,0 +1,9 @@
+.vscode
+
+**/.env*
+
+src/node_modules
+src/.next
+
+src/cypress/screenshots/*
+src/cypress/videos/*

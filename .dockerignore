@@ -1,0 +1,11 @@
+.vscode
+
+src/node_modules
+src/.next
+src/.eslintrc
+
+src/cypress/screenshots/*
+src/cypress/videos/*
+
+dockerfiles
+k8s

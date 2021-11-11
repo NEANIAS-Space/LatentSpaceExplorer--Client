@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: client
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod 
+spec:
+  rules:
+    - host: lse.staging.neanias.eu
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: client
+                port:
+                  number: 8080
+  tls: 
+    - hosts: 
+      - lse.staging.neanias.eu
+      secretName: lse-tls-cert
