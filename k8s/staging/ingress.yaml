@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: client
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod 
+    cert-manager.io/cluster-issuer: letsencrypt-stag 
 spec:
   rules:
     - host: lse.staging.neanias.eu
