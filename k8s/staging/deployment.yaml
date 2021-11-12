@@ -14,7 +14,9 @@ spec:
     spec:
       containers:
         - name: client
-          image: client
+          image: gitlab.neanias.eu:5050/s3-service/latent-space-explorer/client:v0.0.3-staging
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
+      imagePullSecrets:
+        - name: regcred
