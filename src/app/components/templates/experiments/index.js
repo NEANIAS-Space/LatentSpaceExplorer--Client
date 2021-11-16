@@ -12,6 +12,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import DeleteIcon from '@material-ui/icons/Delete';
 import VisibilityIcon from '@material-ui/icons/Visibility';
+import DownloadIcon from '@material-ui/icons/CloudDownload';
 import Link from '@material-ui/core/Link';
 import { getExperiments, deleteExperiment } from 'app/api/experiment';
 
@@ -48,22 +49,24 @@ const ExperimentTemplate = () => {
                         <Table aria-label="table">
                             <TableHead>
                                 <TableRow>
-                                    <TableCell align="center">ID</TableCell>
                                     <TableCell align="center">Name</TableCell>
                                     <TableCell align="center">
-                                        Image Size
+                                        Image size
                                     </TableCell>
                                     <TableCell align="center">
-                                        Image Channels
+                                        Channels num.
                                     </TableCell>
                                     <TableCell align="center">
-                                        Preview Image
+                                        Preview
                                     </TableCell>
                                     <TableCell align="center">
-                                        Architecture Name
+                                        Architecture
                                     </TableCell>
                                     <TableCell align="center">
-                                        Latent Dim.
+                                        Latent dim.
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        Download meta.
                                     </TableCell>
                                     <TableCell align="center">Delete</TableCell>
                                     <TableCell align="center">Show</TableCell>
@@ -74,29 +77,26 @@ const ExperimentTemplate = () => {
                                     Array.isArray(experiments) &&
                                     experiments.map((experiment) => (
                                         <TableRow key={experiment.id}>
-                                            <TableCell
-                                                component="th"
-                                                scope="row"
-                                                align="center"
-                                            >
-                                                {experiment.id}
-                                            </TableCell>
                                             <TableCell align="center">
                                                 {experiment.metadata.name}
                                             </TableCell>
                                             <TableCell align="center">
+                                                {experiment.metadata.image.dim}{' '}
+                                                x{' '}
                                                 {experiment.metadata.image.dim}
                                             </TableCell>
                                             <TableCell align="center">
                                                 {
-                                                    experiment.metadata.image
-                                                        .channels
+                                                    Object.keys(
+                                                        experiment.metadata
+                                                            .image.channels.map,
+                                                    ).length
                                                 }
                                             </TableCell>
                                             <TableCell align="center">
                                                 {JSON.stringify(
                                                     experiment.metadata.image
-                                                        .preview,
+                                                        .channels.preview,
                                                 )}
                                             </TableCell>
                                             <TableCell align="center">
@@ -110,6 +110,9 @@ const ExperimentTemplate = () => {
                                                     experiment.metadata
                                                         .architecture.latent_dim
                                                 }
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <DownloadIcon />
                                             </TableCell>
                                             <TableCell align="center">
                                                 <Link
