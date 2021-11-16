@@ -1,6 +1,8 @@
 import axios from 'axios';
 
 const api = (userId) => {
+    console.log(process.env);
+
     const args = {
         baseURL: '/server',
         headers: {
