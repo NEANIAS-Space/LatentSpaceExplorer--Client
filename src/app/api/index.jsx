@@ -1,10 +1,8 @@
 import axios from 'axios';
 
 const api = (userId) => {
-    console.log(process.env);
-
     const args = {
-        baseURL: '/server',
+        baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
         headers: {
             'Content-Type': 'application/json',
             'user-id': userId,
