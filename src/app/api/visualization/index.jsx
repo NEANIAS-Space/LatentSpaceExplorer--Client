@@ -45,7 +45,7 @@ const getVisualization = async (
             ...(is3D && {
                 z: [...graphData[groups[i]].z, points[i][2]],
             }),
-            text: [...graphData[groups[i]].text, labels[i]],
+            text: [...graphData[groups[i]].text, labels[i].file_name],
         };
     }
 
