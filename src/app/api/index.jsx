@@ -5,7 +5,7 @@ const api = (userId) => {
         baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
         headers: {
             'Content-Type': 'application/json',
-            'user-id': userId,
+            'User-ID': userId,
         },
     };
 
