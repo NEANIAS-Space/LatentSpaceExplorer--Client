@@ -36,7 +36,7 @@ COPY ./src/cypress /app/cypress
 
 ENV ENVIRONMENT production
 
-COPY ./src/.env.production .
+COPY ./src/.env.production ./.env
 
 RUN ["npm", "run", "build"]
 CMD ["npm", "run", "start"]
