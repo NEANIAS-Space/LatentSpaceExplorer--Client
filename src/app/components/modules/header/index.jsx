@@ -13,7 +13,6 @@ import { HeaderWrapper, ToolbarWrapper } from './style';
 
 const Header = () => {
     const [session] = useSession();
-
     const [anchorEl, setAnchorEl] = useState(null);
 
     const handleClick = (event) => {
