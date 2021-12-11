@@ -1,14 +1,27 @@
 import PropTypes from 'prop-types';
-import { Typography, Divider, Box } from '@material-ui/core';
+import Divider from '@material-ui/core/Divider';
+import Typography from '@material-ui/core/Typography';
+import Box from '@material-ui/core/Box';
+import Grid from '@material-ui/core/Grid';
 import WidgetWrapper from './style';
 
-const Widget = ({ children, title }) => (
+const Widget = ({ title, icon, children }) => (
     <WidgetWrapper>
         {title && (
             <Box mb={2}>
-                <Typography variant="subtitle1" component="p">
-                    {title}
-                </Typography>
+                <Grid
+                    container
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                >
+                    <Grid item>
+                        <Typography variant="subtitle1" component="p">
+                            {title}
+                        </Typography>
+                    </Grid>
+                    <Grid item>{icon && icon}</Grid>
+                </Grid>
                 <Divider />
             </Box>
         )}
@@ -17,12 +30,14 @@ const Widget = ({ children, title }) => (
 );
 
 Widget.propTypes = {
-    children: PropTypes.element.isRequired,
     title: PropTypes.string,
+    icon: PropTypes.element,
+    children: PropTypes.element.isRequired,
 };
 
 Widget.defaultProps = {
     title: '',
+    icon: null,
 };
 
 export default Widget;
