@@ -14,7 +14,7 @@ const api = (userId) => {
 
     instance.interceptors.response.use(
         (response) => response.data,
-        (error) => error,
+        (error) => Promise.reject(error),
     );
 
     return instance;
