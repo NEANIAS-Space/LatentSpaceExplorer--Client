@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/client';
 import DefaultLayout from 'app/components/layouts/default-layout';
 import PrimaryContent from 'app/components/modules/primary-content';
@@ -18,29 +18,13 @@ import MessageBox from 'app/components/elements/message-box';
 
 const ExperimentTemplate = () => {
     const [session] = useSession();
-    const [experiments, setExperiments] = useState([]);
+
     const [openMessageBox, setOpenMessageBox] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
-    const fetchExperiments = () => {
-        getExperiments(session.user.email)
-            .then((results) => {
-                setExperiments(results);
-            })
-            .catch((e) => {
-                setOpenMessageBox(true);
-                setErrorMessage(e.response.data.detail);
-            });
-    };
+    const [experiments, setExperiments] = useState([]);
 
-    const handleDeleteExperiment = (experimentId) => {
-        deleteExperiment(session.user.email, experimentId)
-            .then(fetchExperiments)
-            .catch((e) => {
-                setOpenMessageBox(true);
-                setErrorMessage(e.response.data.message);
-            });
-    };
+    const userId = session.user.email;
 
     const handleCloseMessageBox = (event, reason) => {
         if (reason === 'clickaway') {
@@ -58,6 +42,26 @@ const ExperimentTemplate = () => {
             handleClose={handleCloseMessageBox}
         />
     );
+
+    const fetchExperiments = () => {
+        getExperiments(userId)
+            .then((results) => {
+                setExperiments(results);
+            })
+            .catch((e) => {
+                setOpenMessageBox(true);
+                setErrorMessage(e.response.data.detail);
+            });
+    };
+
+    const handleDeleteExperiment = (experimentId) => {
+        deleteExperiment(userId, experimentId)
+            .then(fetchExperiments)
+            .catch((e) => {
+                setOpenMessageBox(true);
+                setErrorMessage(e.response.data.message);
+            });
+    };
 
     const renderTableRow = () =>
         experiments.map((experiment) => (
@@ -94,7 +98,7 @@ const ExperimentTemplate = () => {
             </TableRow>
         ));
 
-    useEffect(fetchExperiments, [session]);
+    useEffect(fetchExperiments, [userId]);
 
     return (
         <DefaultLayout>
