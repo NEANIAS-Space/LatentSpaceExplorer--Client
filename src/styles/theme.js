@@ -1,7 +1,7 @@
 import { createTheme } from '@material-ui/core/styles';
 
 // Default theme istance
-// const defaultTheme = createTheme();
+const defaultTheme = createTheme();
 
 // Custom theme istance
 const theme = createTheme({
@@ -14,11 +14,16 @@ const theme = createTheme({
         },
     },
     overrides: {
-        MuiLink: {
-            root: {
-                cursor: 'pointer',
+        MuiFormControl: {
+            marginDense: {
+                marginBottom: defaultTheme.spacing(2),
             },
         },
+        // MuiLink: {
+        //     root: {
+        //         cursor: 'pointer',
+        //     },
+        // },
     },
 });
 
