@@ -6,7 +6,7 @@ const SideBarWrapper = styled.div`
     grid-column: ${(props) => props.column};
     background-color: ${theme.palette.grey[200]};
     padding: ${theme.spacing(2)}px;
-    overflow-y: scroll;
+    overflow-y: auto;
 `;
 
 export default SideBarWrapper;
