@@ -14,6 +14,7 @@ const GraphManager = (components, points, ids, traces) => {
                 width: 1,
             },
         },
+        hovertemplate: '%{text}',
     };
 
     const graphData = Array.from([...new Set(traces)]).fill(trace);
