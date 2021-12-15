@@ -31,6 +31,22 @@ const VisualizationForm = () => {
     const userId = session.user.email;
     const experimentId = router.query.id;
 
+    const compare = (object1, object2) => {
+        if (object1.algorithm > object2.algorithm) {
+            return 1;
+        }
+        if (object1.algorithm < object2.algorithm) {
+            return -1;
+        }
+        if (object1.components > object2.components) {
+            return 1;
+        }
+        if (object1.components < object2.components) {
+            return -1;
+        }
+        return 0;
+    };
+
     const fetchReductions = () => {
         getReductions(userId, experimentId)
             .then((results) => {
@@ -53,6 +69,8 @@ const VisualizationForm = () => {
                         datetime,
                     };
                 });
+
+                options.sort(compare);
 
                 setReductions(options);
             })
@@ -82,6 +100,8 @@ const VisualizationForm = () => {
                         datetime,
                     };
                 });
+
+                options.sort(compare);
 
                 setClusters(options);
             })
