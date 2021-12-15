@@ -16,7 +16,7 @@ const Graph = () => {
     const [frames, setFrames] = useState(undefined);
     const [config, setConfig] = useState(undefined);
 
-    const handlePointHover = (data) => {
+    const handlePointClick = (data) => {
         const imageName = data.points[0].text;
         setPreviewImage(`${imageName}`);
     };
@@ -32,7 +32,7 @@ const Graph = () => {
                 setFrames(figure.frames);
                 setConfig(figure.config);
             }}
-            onHover={handlePointHover}
+            onClick={handlePointClick}
             style={{ width: '100%', height: '100%' }}
             useResizeHandler
         />
