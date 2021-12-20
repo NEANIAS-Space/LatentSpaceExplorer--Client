@@ -13,6 +13,8 @@ const ProjectorTemplate = () => {
     const [openMessageBox, setOpenMessageBox] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
+    const [updateReductions, setUpdateReductions] = useState(false);
+
     const [graphData, setGraphData] = useState([]);
 
     const [previewImage, setPreviewImage] = useState('');
@@ -42,6 +44,8 @@ const ProjectorTemplate = () => {
                     setOpenMessageBox,
                     errorMessage,
                     setErrorMessage,
+                    updateReductions,
+                    setUpdateReductions,
                     graphData,
                     setGraphData,
                     previewImage,

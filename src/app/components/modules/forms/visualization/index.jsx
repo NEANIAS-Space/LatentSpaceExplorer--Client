@@ -15,8 +15,11 @@ const VisualizationForm = () => {
     const [session] = useSession();
     const router = useRouter();
 
-    const [openMessageBox, setOpenMessageBox] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+    const { setOpenMessageBox } = useContext(ProjectorContext);
+    const { setErrorMessage } = useContext(ProjectorContext);
+
+    const { updateReductions, setUpdateReductions } =
+        useContext(ProjectorContext);
 
     const { setGraphData } = useContext(ProjectorContext);
 
@@ -48,36 +51,40 @@ const VisualizationForm = () => {
     };
 
     const fetchReductions = () => {
-        getReductions(userId, experimentId)
-            .then((results) => {
-                const options = results.map((option) => {
-                    const {
-                        id,
-                        metadata: {
+        if (updateReductions) {
+            setUpdateReductions(false);
+
+            getReductions(userId, experimentId)
+                .then((results) => {
+                    const options = results.map((option) => {
+                        const {
+                            id,
+                            metadata: {
+                                algorithm,
+                                components,
+                                params,
+                                start_datetime: datetime,
+                            },
+                        } = option;
+
+                        return {
+                            id,
                             algorithm,
                             components,
                             params,
-                            start_datetime: datetime,
-                        },
-                    } = option;
+                            datetime,
+                        };
+                    });
 
-                    return {
-                        id,
-                        algorithm,
-                        components,
-                        params,
-                        datetime,
-                    };
+                    options.sort(compare);
+
+                    setReductions(options);
+                })
+                .catch((e) => {
+                    setOpenMessageBox(true);
+                    setErrorMessage(e.response.data.detail);
                 });
-
-                options.sort(compare);
-
-                setReductions(options);
-            })
-            .catch((e) => {
-                setOpenMessageBox(true);
-                setErrorMessage(e.response);
-            });
+        }
     };
 
     const fetchClusters = () => {
@@ -205,9 +212,26 @@ const VisualizationForm = () => {
         setClusterId('');
     };
 
-    useEffect(fetchReductions, [userId, experimentId]);
-    useEffect(fetchClusters, [userId, experimentId]);
-    useEffect(fetchLabels, [userId, experimentId]);
+    useEffect(fetchReductions, [
+        userId,
+        experimentId,
+        setOpenMessageBox,
+        setErrorMessage,
+        updateReductions,
+        setUpdateReductions,
+    ]);
+    useEffect(fetchClusters, [
+        userId,
+        experimentId,
+        setOpenMessageBox,
+        setErrorMessage,
+    ]);
+    useEffect(fetchLabels, [
+        userId,
+        experimentId,
+        setOpenMessageBox,
+        setErrorMessage,
+    ]);
     useEffect(fetchGraphData, [
         userId,
         experimentId,
@@ -216,6 +240,8 @@ const VisualizationForm = () => {
         labelId,
         labels,
         setGraphData,
+        setOpenMessageBox,
+        setErrorMessage,
     ]);
 
     return (
@@ -229,10 +255,10 @@ const VisualizationForm = () => {
                 >
                     <InputLabel id="reduction">Reduction</InputLabel>
                     <AdvancedSelect
-                        id="reduction"
+                        name="reduction"
                         value={reductionId}
                         options={reductions}
-                        setValue={setReductionId}
+                        setValue={(event) => setReductionId(event.target.value)}
                     />
                 </FormControl>
                 <FormControl
@@ -245,10 +271,10 @@ const VisualizationForm = () => {
                 >
                     <InputLabel id="cluster">Cluster</InputLabel>
                     <AdvancedSelect
-                        id="cluster"
+                        name="cluster"
                         options={clusters}
                         value={clusterId}
-                        setValue={setClusterId}
+                        setValue={(event) => setClusterId(event.target.value)}
                         onChange={switchToCluster}
                     />
                 </FormControl>
@@ -262,10 +288,10 @@ const VisualizationForm = () => {
                 >
                     <InputLabel id="label">Label</InputLabel>
                     <SimpleSelect
-                        id="label"
+                        name="label"
                         options={labelsNames}
                         value={labelId}
-                        setValue={setLabelId}
+                        setValue={(event) => setLabelId(event.target.value)}
                         onChange={switchToLabel}
                     />
                 </FormControl>
