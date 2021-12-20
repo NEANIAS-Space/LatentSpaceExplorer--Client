@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/client';
+import ProjectorContext from 'app/contexts/projector';
 import Image from 'next/image';
 import Widget from 'app/components/modules/widget';
 import getImage from 'app/api/image';
@@ -11,8 +12,8 @@ const PreviewImage = ({ imageName }) => {
     const [session] = useSession();
     const router = useRouter();
 
-    const [openMessageBox, setOpenMessageBox] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+    const { setOpenMessageBox } = useContext(ProjectorContext);
+    const { setErrorMessage } = useContext(ProjectorContext);
 
     const [imageUrl, setImageUrl] = useState('');
 
@@ -32,7 +33,13 @@ const PreviewImage = ({ imageName }) => {
             });
     };
 
-    useEffect(fetchImage, [userId, experimentId, imageName]);
+    useEffect(fetchImage, [
+        userId,
+        experimentId,
+        imageName,
+        setOpenMessageBox,
+        setErrorMessage,
+    ]);
 
     return (
         <Widget title={imageName}>
