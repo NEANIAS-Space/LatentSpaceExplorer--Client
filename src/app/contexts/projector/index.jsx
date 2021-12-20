@@ -5,6 +5,8 @@ const ProjectorContext = createContext({
     setOpenMessageBox: () => {},
     errorMessage: '',
     setErrorMessage: () => {},
+    updateReductions: true,
+    setUpdateReductions: () => {},
     graphData: [],
     setGraphData: () => {},
 });
