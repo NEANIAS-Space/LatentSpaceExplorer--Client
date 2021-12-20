@@ -5,4 +5,6 @@ const camelCaseKeysToUnderscore = (o) =>
         return acc;
     }, {});
 
-export default camelCaseKeysToUnderscore;
+const normalize = (str) => String(str).toLowerCase().replaceAll('_', ' ');
+
+export { camelCaseKeysToUnderscore, normalize };
