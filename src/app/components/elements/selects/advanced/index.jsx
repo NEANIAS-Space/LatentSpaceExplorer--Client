@@ -4,7 +4,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { Select as MUISelect } from '@material-ui/core';
-import normalize from 'app/utils/formatter';
+import { normalize } from 'app/utils/formatter';
 
 const AdvancedSelect = ({ name, options, value, setValue, onChange }) => {
     const renderParams = (params) => {
