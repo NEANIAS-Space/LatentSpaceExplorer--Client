@@ -4,11 +4,12 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { Select as MUISelect } from '@material-ui/core';
+import normalize from 'app/utils/formatter';
 
-const AdvancedSelect = ({ id, options, value, setValue, onChange }) => {
+const AdvancedSelect = ({ name, options, value, setValue, onChange }) => {
     const renderParams = (params) => {
         const stringParams = Object.keys(params)
-            .map((key) => `${key}=${params[key]}`)
+            .map((key) => `${normalize(key)}=${params[key]}`)
             .join(' | ');
 
         return (
@@ -33,7 +34,7 @@ const AdvancedSelect = ({ id, options, value, setValue, onChange }) => {
                             variant="body1"
                             color="textPrimary"
                         >
-                            {option.algorithm}
+                            {normalize(option.algorithm)}
                         </Typography>
                         {option.components && (
                             <Typography
@@ -76,14 +77,14 @@ const AdvancedSelect = ({ id, options, value, setValue, onChange }) => {
         ));
 
     const handleChange = (event) => {
-        setValue(event.target.value);
+        setValue(event);
         onChange();
     };
 
     return (
         <MUISelect
-            label={id}
-            labelId={id}
+            label={name}
+            name={name}
             value={value}
             onChange={handleChange}
         >
@@ -93,7 +94,7 @@ const AdvancedSelect = ({ id, options, value, setValue, onChange }) => {
 };
 
 AdvancedSelect.propTypes = {
-    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
     options: PropTypes.arrayOf(
         PropTypes.shape({
             id: PropTypes.string,

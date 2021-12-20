@@ -1,24 +1,25 @@
 import PropTypes from 'prop-types';
 import MenuItem from '@material-ui/core/MenuItem';
 import { Select as MUISelect } from '@material-ui/core';
+import normalize from 'app/utils/formatter';
 
-const SimpleSelect = ({ id, options, value, setValue, onChange }) => {
+const SimpleSelect = ({ name, options, value, setValue, onChange }) => {
     const renderOptions = () =>
         options.map((option) => (
             <MenuItem key={option.id} value={option.id} dense>
-                {option.value}
+                {normalize(option.value)}
             </MenuItem>
         ));
 
     const handleChange = (event) => {
-        setValue(event.target.value);
+        setValue(event);
         onChange();
     };
 
     return (
         <MUISelect
-            label={id}
-            labelId={id}
+            label={name}
+            name={name}
             value={value}
             onChange={handleChange}
         >
@@ -28,7 +29,7 @@ const SimpleSelect = ({ id, options, value, setValue, onChange }) => {
 };
 
 SimpleSelect.propTypes = {
-    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
     options: PropTypes.arrayOf(
         PropTypes.shape({
             id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
