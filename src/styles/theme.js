@@ -19,11 +19,13 @@ const theme = createTheme({
                 marginBottom: defaultTheme.spacing(2),
             },
         },
-        // MuiLink: {
-        //     root: {
-        //         cursor: 'pointer',
-        //     },
-        // },
+        MuiSlider: {
+            root: {
+                width: '90%',
+                display: 'block',
+                margin: '0 auto',
+            },
+        },
     },
 });
 
