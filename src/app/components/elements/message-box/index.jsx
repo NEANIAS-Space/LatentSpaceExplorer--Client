@@ -25,7 +25,7 @@ const MessageBox = ({ message, severity, open, handleClose }) => (
             </>
         }
     >
-        <Alert onClose={handleClose} severity={severity}>
+        <Alert onClose={handleClose} severity={severity} elevation={1}>
             {message}
         </Alert>
     </Snackbar>
