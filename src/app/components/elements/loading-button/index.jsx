@@ -1,45 +1,41 @@
 import PropTypes from 'prop-types';
-import { Button as MaterialUIButton } from '@material-ui/core';
+import { Button as MUIButton } from '@material-ui/core';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-const LoadingButton = ({ text, type, color, isLoading, onChange }) => {
-    const handleChange = () => {
-        onChange();
+const LoadingButton = ({ text, color, isLoading, onClick }) => {
+    const handleClick = () => {
+        onClick();
     };
 
     return (
-        <MaterialUIButton
-            type={type}
+        <MUIButton
             variant="contained"
             color={color}
             disableElevation
             fullWidth
             margin="dense"
-            onClick={handleChange}
-            data-testid="LoadingButtonTest"
+            onClick={handleClick}
         >
             {isLoading ? (
                 <CircularProgress color="secondary" size={24} />
             ) : (
                 text
             )}
-        </MaterialUIButton>
+        </MUIButton>
     );
 };
 
 LoadingButton.propTypes = {
     text: PropTypes.string.isRequired,
-    type: PropTypes.string,
     color: PropTypes.string,
     isLoading: PropTypes.bool,
-    onChange: PropTypes.func,
+    onClick: PropTypes.func,
 };
 
 LoadingButton.defaultProps = {
-    type: 'button',
     color: 'default',
     isLoading: false,
-    onChange: () => {},
+    onClick: () => {},
 };
 
 export default LoadingButton;

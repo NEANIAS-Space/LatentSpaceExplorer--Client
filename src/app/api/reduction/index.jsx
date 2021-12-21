@@ -8,6 +8,13 @@ const getReductions = async (userId, experimentId) => {
     return reductions;
 };
 
+const getPendingReductionsCount = async (userId, experimentId) => {
+    const result = await api(userId).get(
+        `/experiments/${experimentId}/reductions/pending`,
+    );
+    return result;
+};
+
 const getReduction = async (userId, experimentId, reductionId) => {
     const reduction = await api(userId).get(
         `/experiments/${experimentId}/reductions/${reductionId}`,
@@ -37,4 +44,9 @@ const postReduction = async (
     return task;
 };
 
-export { postReduction, getReductions, getReduction };
+export {
+    postReduction,
+    getPendingReductionsCount,
+    getReductions,
+    getReduction,
+};

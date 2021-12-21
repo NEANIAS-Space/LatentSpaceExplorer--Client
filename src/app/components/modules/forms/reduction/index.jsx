@@ -1,104 +1,232 @@
-import { useState } from 'react';
-import { useRouter } from 'next/router';
+import { useState, useContext, useReducer, useEffect } from 'react';
 import { useSession } from 'next-auth/client';
-import { FormControl, InputLabel, Typography } from '@material-ui/core';
-import Widget from 'app/components/elements/widget';
-import Select from 'app/components/elements/selects/default';
+import { useRouter } from 'next/router';
+import ProjectorContext from 'app/contexts/projector';
+import projectorFormReducer from 'app/reducers/projector';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
+import Typography from '@material-ui/core/Typography';
+import Switch from '@material-ui/core/Switch';
+import Tooltip from '@material-ui/core/Tooltip';
+import Badge from '@material-ui/core/Badge';
+import ScheduleIcon from '@material-ui/icons/Schedule';
+import Widget from 'app/components/modules/widget';
+import SimpleSelect from 'app/components/elements/selects/simple';
 import Slider from 'app/components/elements/slider';
 import LoadingButton from 'app/components/elements/loading-button';
-import { postReduction } from 'app/api/reduction';
+import { postReduction, getPendingReductionsCount } from 'app/api/reduction';
 import sleep from 'app/utils/chronos';
+import humps from 'humps';
 
 const ReductionForm = () => {
     const [session] = useSession();
     const router = useRouter();
 
-    // algorithm
-    const [algorithm, setAlgorithm] = useState('pca');
-    const algorithmOptions = [
-        { label: 'PCA', value: 'pca' },
-        { label: 'TSNE', value: 'tsne' },
-        { label: 'UMAP', value: 'umap' },
-    ];
+    const { setOpenMessageBox } = useContext(ProjectorContext);
+    const { setErrorMessage } = useContext(ProjectorContext);
 
-    // components
-    const [components, setComponents] = useState(2);
-    const componentsOptions = [
-        { label: 2, value: 2 },
-        { label: 3, value: 3 },
-    ];
+    const { setUpdateReductions } = useContext(ProjectorContext);
 
-    // tsne
-    const [perplexity, setPerplexity] = useState(30);
-    const [iterations, setIterations] = useState(1000);
-    const [learningRate, setLearningRate] = useState(200);
+    const monitoringFrequency = 5000;
+    const [monitoringPendingCount, setMonitoringPendingCount] = useState(false);
+    const [previousPendingCount, setPreviousPendingCount] = useState(0);
+    const [pendingCount, setPendingCount] = useState(0);
 
-    // umap
-    const [neighbors, setNeighbors] = useState(15);
-    const [minDistance, setMinDistance] = useState(0.1);
+    const [submitLoading, setSubmitLoading] = useState(false);
 
-    // button
-    const [buttonIsLoading, setButtonIsLoading] = useState(false);
+    const userId = session.user.email;
+    const experimentId = router.query.id;
 
-    // form's submit
-    const handleFormSubmit = async (event) => {
-        event.preventDefault();
-
-        let params = {};
-
-        switch (algorithm) {
-            case 'pca':
-                break;
-            case 'tsne':
-                params = {
-                    perplexity,
-                    iterations,
-                    learning_rate: learningRate,
-                };
-                break;
-            case 'umap':
-                params = {
-                    neighbors,
-                    min_distance: minDistance,
-                };
-                break;
-            default:
-                break;
-        }
-
-        postReduction(
-            session.user.email,
-            router.query.id,
-            algorithm,
-            components,
-            params,
-        ).then(() => sleep(1000).then(() => setButtonIsLoading(false)));
+    const initialFormState = {
+        algorithm: 'pca',
+        components: 2,
+        tsne: {
+            perplexity: 10,
+            iterations: 1000,
+            learningRate: 200,
+            metric: 'euclidean',
+            init: 'random',
+        },
+        umap: {
+            neighbors: 15,
+            minDistance: 0.1,
+            metric: 'euclidean',
+            densmap: false,
+        },
+        isomap: {
+            neighbors: 15,
+            metric: 'euclidean',
+        },
     };
 
+    const [formState, dispatch] = useReducer(
+        projectorFormReducer,
+        initialFormState,
+    );
+
+    const algorithmOptions = [
+        { id: 'pca', value: 'pca' },
+        { id: 'tsne', value: 'tsne' },
+        { id: 'umap', value: 'umap' },
+        { id: 'truncatedSvd', value: 'truncated svd' },
+        { id: 'spectralEmbedding', value: 'spectral embedding' },
+        { id: 'isomap', value: 'isomap' },
+        { id: 'mds', value: 'mds' },
+    ];
+
+    const componentsOptions = [
+        { id: 2, value: 2 },
+        { id: 3, value: 3 },
+    ];
+
+    const metricOptions = [
+        { id: 'euclidean', value: 'euclidean' },
+        { id: 'cosine', value: 'cosine' },
+    ];
+
+    const initOptions = [
+        { id: 'random', value: 'random' },
+        { id: 'pca', value: 'pca' },
+    ];
+
+    const handleCommonParams = (event) => {
+        dispatch({
+            type: 'COMMON',
+            field: event.target.name,
+            value: event.target.value,
+        });
+    };
+
+    const handleAlgorithmParams = (event) => {
+        let value;
+
+        switch (event.target.type) {
+            case 'number':
+                value = Number(event.target.value);
+                break;
+
+            case 'checkbox':
+                value = Boolean(event.target.checked);
+                break;
+
+            default:
+                value = String(event.target.value);
+        }
+
+        dispatch({
+            type: 'ALGORITHM',
+            algorithm: formState.algorithm,
+            field: event.target.name,
+            value,
+        });
+    };
+
+    const fetchPendingCount = () => {
+        setMonitoringPendingCount(true);
+
+        getPendingReductionsCount(userId, experimentId)
+            .then((tasks) => {
+                setPreviousPendingCount(pendingCount);
+                setPendingCount(tasks.count);
+
+                if (tasks.count > 0) {
+                    // keep fetching
+                    sleep(10000).then(fetchPendingCount());
+                } else {
+                    setMonitoringPendingCount(false);
+                }
+            })
+            .catch((e) => {
+                setMonitoringPendingCount(false);
+                setOpenMessageBox(true);
+                setErrorMessage(e.response.data.message);
+            });
+    };
+
+    const handleSubmit = async () => {
+        if (!submitLoading) {
+            setSubmitLoading(true);
+
+            const { algorithm, components } = formState;
+            const hasParams = !!formState[algorithm];
+            const params = hasParams ? formState[algorithm] : {};
+
+            postReduction(
+                userId,
+                experimentId,
+                humps.decamelize(algorithm, { separator: '_' }),
+                components,
+                humps.decamelizeKeys(params, { separator: '_' }),
+            )
+                .then(() =>
+                    sleep(monitoringFrequency).then(() => {
+                        setSubmitLoading(false);
+
+                        setPendingCount(pendingCount + 1);
+
+                        // fetch if not already fetching
+                        if (!monitoringPendingCount) {
+                            fetchPendingCount();
+                        }
+                    }),
+                )
+                .catch((e) => {
+                    setOpenMessageBox(true);
+                    setErrorMessage(e.response.data.message);
+                    setSubmitLoading(false);
+                });
+        }
+    };
+
+    useEffect(() => {
+        if (pendingCount <= previousPendingCount) {
+            // update visualization form
+            setUpdateReductions(true);
+        }
+    }, [previousPendingCount, pendingCount, setUpdateReductions]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(fetchPendingCount, []);
+
     return (
-        <Widget title="Reduction">
-            <form onSubmit={handleFormSubmit} data-testid="ReductionFormTest">
+        <Widget
+            title="Reduction"
+            icon={
+                <>
+                    <Tooltip title="Pending reductions">
+                        <Badge badgeContent={pendingCount} color="secondary">
+                            <ScheduleIcon
+                                color={
+                                    pendingCount === 0 ? 'disabled' : 'primary'
+                                }
+                            />
+                        </Badge>
+                    </Tooltip>
+                </>
+            }
+        >
+            <form>
                 <FormControl variant="outlined" margin="dense" fullWidth>
                     <InputLabel id="algorithm">Algorithm</InputLabel>
-                    <Select
+                    <SimpleSelect
                         name="algorithm"
-                        value={algorithm}
                         options={algorithmOptions}
-                        setValue={setAlgorithm}
+                        value={formState.algorithm}
+                        setValue={handleCommonParams}
                     />
                 </FormControl>
                 <FormControl variant="outlined" margin="dense" fullWidth>
                     <InputLabel id="components">Components</InputLabel>
-                    <Select
+                    <SimpleSelect
                         name="components"
-                        value={components}
                         options={componentsOptions}
-                        setValue={setComponents}
+                        value={formState.components}
+                        setValue={handleCommonParams}
                     />
                 </FormControl>
 
-                {/* T-SNE */}
-                {algorithm === 'tsne' && (
+                {/* TSNE */}
+                {formState.algorithm === 'tsne' && (
                     <>
                         <FormControl margin="dense" fullWidth>
                             <Typography variant="caption">
@@ -106,11 +234,11 @@ const ReductionForm = () => {
                             </Typography>
                             <Slider
                                 name="perplexity"
-                                value={perplexity}
+                                value={formState.tsne.perplexity}
                                 step={1}
                                 min={5}
                                 max={50}
-                                setValue={setPerplexity}
+                                setValue={handleAlgorithmParams}
                             />
                         </FormControl>
                         <FormControl margin="dense" fullWidth>
@@ -119,11 +247,11 @@ const ReductionForm = () => {
                             </Typography>
                             <Slider
                                 name="iterations"
-                                value={iterations}
+                                value={formState.tsne.iterations}
                                 step={1}
                                 min={250}
                                 max={5000}
-                                setValue={setIterations}
+                                setValue={handleAlgorithmParams}
                             />
                         </FormControl>
                         <FormControl margin="dense" fullWidth>
@@ -132,28 +260,54 @@ const ReductionForm = () => {
                             </Typography>
                             <Slider
                                 name="learningRate"
-                                value={learningRate}
+                                value={formState.tsne.learningRate}
                                 step={1}
                                 min={10}
                                 max={1000}
-                                setValue={setLearningRate}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                        <FormControl
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                        >
+                            <InputLabel id="metric">Metric</InputLabel>
+                            <SimpleSelect
+                                name="metric"
+                                options={metricOptions}
+                                value={formState.tsne.metric}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                        <FormControl
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                        >
+                            <InputLabel id="init">init</InputLabel>
+                            <SimpleSelect
+                                name="init"
+                                options={initOptions}
+                                value={formState.tsne.init}
+                                setValue={handleAlgorithmParams}
                             />
                         </FormControl>
                     </>
                 )}
 
                 {/* UMAP */}
-                {algorithm === 'umap' && (
+                {formState.algorithm === 'umap' && (
                     <>
                         <FormControl margin="dense" fullWidth>
                             <Typography variant="caption">Neighbors</Typography>
                             <Slider
                                 name="neighbors"
-                                value={neighbors}
+                                value={formState.umap.neighbors}
                                 step={1}
                                 min={2}
                                 max={200}
-                                setValue={setNeighbors}
+                                setValue={handleAlgorithmParams}
                             />
                         </FormControl>
                         <FormControl margin="dense" fullWidth>
@@ -162,11 +316,67 @@ const ReductionForm = () => {
                             </Typography>
                             <Slider
                                 name="minDistance"
-                                value={minDistance}
+                                value={formState.umap.minDistance}
                                 step={0.01}
                                 min={0.01}
                                 max={0.99}
-                                setValue={setMinDistance}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                        <FormControl
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                        >
+                            <InputLabel id="metric">Metric</InputLabel>
+                            <SimpleSelect
+                                name="metric"
+                                options={metricOptions}
+                                value={formState.umap.metric}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                        <FormControl
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                        >
+                            <Typography variant="caption">Densmap</Typography>
+                            <Switch
+                                name="densmap"
+                                checked={formState.umap.densmap}
+                                onChange={handleAlgorithmParams}
+                                color="primary"
+                            />
+                        </FormControl>
+                    </>
+                )}
+
+                {/* Isomap */}
+                {formState.algorithm === 'isomap' && (
+                    <>
+                        <FormControl margin="dense" fullWidth>
+                            <Typography variant="caption">Neighbors</Typography>
+                            <Slider
+                                name="neighbors"
+                                value={formState.isomap.neighbors}
+                                step={1}
+                                min={2}
+                                max={200}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                        <FormControl
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                        >
+                            <InputLabel id="metric">Metric</InputLabel>
+                            <SimpleSelect
+                                name="metric"
+                                options={metricOptions}
+                                value={formState.isomap.metric}
+                                setValue={handleAlgorithmParams}
                             />
                         </FormControl>
                     </>
@@ -176,10 +386,8 @@ const ReductionForm = () => {
                     text="Compute"
                     type="submit"
                     color="primary"
-                    isLoading={buttonIsLoading}
-                    onChange={() => {
-                        setButtonIsLoading(true);
-                    }}
+                    isLoading={submitLoading}
+                    onClick={handleSubmit}
                 />
             </form>
         </Widget>

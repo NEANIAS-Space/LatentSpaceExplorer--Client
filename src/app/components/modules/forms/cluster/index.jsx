@@ -1,105 +1,226 @@
-import { useState } from 'react';
-import { useRouter } from 'next/router';
+import { useContext, useState, useEffect, useReducer } from 'react';
 import { useSession } from 'next-auth/client';
-import { FormControl, InputLabel, Typography } from '@material-ui/core';
-import Widget from 'app/components/elements/widget';
-import Select from 'app/components/elements/selects/default';
+import { useRouter } from 'next/router';
+import ProjectorContext from 'app/contexts/projector';
+import projectorFormReducer from 'app/reducers/projector';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
+import Typography from '@material-ui/core/Typography';
+import Tooltip from '@material-ui/core/Tooltip';
+import Badge from '@material-ui/core/Badge';
+import ScheduleIcon from '@material-ui/icons/Schedule';
+import Widget from 'app/components/modules/widget';
+import SimpleSelect from 'app/components/elements/selects/simple';
 import Slider from 'app/components/elements/slider';
 import LoadingButton from 'app/components/elements/loading-button';
-import { postCluster } from 'app/api/cluster';
+import { postCluster, getPendingClustersCount } from 'app/api/cluster';
 import sleep from 'app/utils/chronos';
+import humps from 'humps';
 
 const ClusterForm = () => {
     const [session] = useSession();
     const router = useRouter();
 
-    // algorithm
-    const [algorithm, setAlgorithm] = useState('dbscan');
-    const algorithmOptions = [
-        { label: 'DBSCAN', value: 'dbscan' },
-        { label: 'Affinity Propagation', value: 'affinity_propagation' },
-        { label: 'KMeans', value: 'kmeans' },
-        {
-            label: 'Agglomerative Clustering',
-            value: 'agglomerative_clustering',
+    const { setOpenMessageBox } = useContext(ProjectorContext);
+    const { setErrorMessage } = useContext(ProjectorContext);
+
+    const { setUpdateClusters } = useContext(ProjectorContext);
+
+    const monitoringFrequency = 5000;
+    const [monitoringPendingCount, setMonitoringPendingCount] = useState(false);
+    const [previousPendingCount, setPreviousPendingCount] = useState(0);
+    const [pendingCount, setPendingCount] = useState(0);
+
+    const [submitLoading, setSubmitLoading] = useState(false);
+
+    const userId = session.user.email;
+    const experimentId = router.query.id;
+
+    const initialFormState = {
+        algorithm: 'dbscan',
+        dbscan: {
+            eps: 0.5,
+            minSamples: 5,
         },
-    ];
-
-    // dbscan
-    const [eps, setEps] = useState(0.5);
-    const [minSamples, setMinSamples] = useState(5);
-
-    // kmeans
-    const [nClusters, setNClusters] = useState(8);
-
-    // agglomerative clustering
-    const [distanceThreshold, setDistanceThreshold] = useState(1);
-
-    // button
-    const [buttonIsLoading, setButtonIsLoading] = useState(false);
-
-    // form's submit
-    const handleFormSubmit = async (event) => {
-        event.preventDefault();
-
-        let params = {};
-
-        switch (algorithm) {
-            case 'dbscan':
-                params = {
-                    eps,
-                    min_samples: minSamples,
-                };
-                break;
-            case 'affinity_propagation':
-                break;
-            case 'kmeans':
-                params = {
-                    n_clusters: nClusters,
-                };
-                break;
-            case 'agglomerative_clustering':
-                params = {
-                    distance_threshold: distanceThreshold,
-                };
-                break;
-            default:
-                break;
-        }
-
-        postCluster(
-            session.user.email,
-            router.query.id,
-            algorithm,
-            params,
-        ).then(() => sleep(1000).then(() => setButtonIsLoading(false)));
+        kmeans: {
+            nClusters: 8,
+        },
+        agglomerativeClustering: {
+            distanceThreshold: 5,
+        },
+        spectralClustering: {
+            nClusters: 8,
+        },
+        optics: {
+            minSamples: 5,
+            metric: 'euclidean',
+        },
+        gaussianMixture: {
+            nComponents: 2,
+        },
+        birch: {
+            nClusters: 3,
+        },
     };
 
+    const [formState, dispatch] = useReducer(
+        projectorFormReducer,
+        initialFormState,
+    );
+
+    const algorithmOptions = [
+        { id: 'dbscan', value: 'dbscan' },
+        { id: 'affinityPropagation', value: 'affinity propagation' },
+        { id: 'kmeans', value: 'kmeans' },
+        {
+            id: 'agglomerativeClustering',
+            value: 'agglomerative clustering',
+        },
+        { id: 'spectralClustering', value: 'spectral clustering' },
+        { id: 'optics', value: 'optics' },
+        { id: 'gaussianMixture', value: 'gaussian mixture' },
+        { id: 'birch', value: 'birch' },
+    ];
+
+    const metricOptions = [
+        { id: 'euclidean', value: 'euclidean' },
+        { id: 'cosine', value: 'cosine' },
+    ];
+
+    const handleCommonParams = (event) => {
+        dispatch({
+            type: 'COMMON',
+            field: event.target.name,
+            value: event.target.value,
+        });
+    };
+
+    const handleAlgorithmParams = (event) => {
+        let value;
+
+        switch (event.target.type) {
+            case 'number':
+                value = Number(event.target.value);
+                break;
+
+            default:
+                value = String(event.target.value);
+        }
+
+        dispatch({
+            type: 'ALGORITHM',
+            algorithm: formState.algorithm,
+            field: event.target.name,
+            value,
+        });
+    };
+
+    const fetchPendingCount = () => {
+        setMonitoringPendingCount(true);
+
+        getPendingClustersCount(userId, experimentId)
+            .then((tasks) => {
+                setPreviousPendingCount(pendingCount);
+                setPendingCount(tasks.count);
+
+                if (tasks.count > 0) {
+                    // keep fetching
+                    sleep(10000).then(fetchPendingCount());
+                } else {
+                    setMonitoringPendingCount(false);
+                }
+            })
+            .catch((e) => {
+                setMonitoringPendingCount(false);
+                setOpenMessageBox(true);
+                setErrorMessage(e.response.data.message);
+            });
+    };
+
+    const handleSubmit = async () => {
+        if (!submitLoading) {
+            setSubmitLoading(true);
+
+            const { algorithm } = formState;
+            const hasParams = !!formState[algorithm];
+            const params = hasParams ? formState[algorithm] : {};
+
+            postCluster(
+                userId,
+                experimentId,
+                humps.decamelize(algorithm, { separator: '_' }),
+                humps.decamelizeKeys(params, { separator: '_' }),
+            )
+                .then(() =>
+                    sleep(monitoringFrequency).then(() => {
+                        setSubmitLoading(false);
+
+                        setPendingCount(pendingCount + 1);
+
+                        // fetch if not already fetching
+                        if (!monitoringPendingCount) {
+                            fetchPendingCount();
+                        }
+                    }),
+                )
+                .catch((e) => {
+                    setOpenMessageBox(true);
+                    setErrorMessage(e.response.data.message);
+                    setSubmitLoading(false);
+                });
+        }
+    };
+
+    useEffect(() => {
+        if (pendingCount <= previousPendingCount) {
+            // update visualization form
+            setUpdateClusters(true);
+        }
+    }, [previousPendingCount, pendingCount, setUpdateClusters]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(fetchPendingCount, []);
+
     return (
-        <Widget title="Cluster">
-            <form onSubmit={handleFormSubmit} data-testid="ClusterFormTest">
+        <Widget
+            title="Cluster"
+            icon={
+                <>
+                    <Tooltip title="Pending clusters">
+                        <Badge badgeContent={pendingCount} color="secondary">
+                            <ScheduleIcon
+                                color={
+                                    pendingCount === 0 ? 'disabled' : 'primary'
+                                }
+                            />
+                        </Badge>
+                    </Tooltip>
+                </>
+            }
+        >
+            <form>
                 <FormControl variant="outlined" margin="dense" fullWidth>
-                    <InputLabel id="clusterAlgorithm">Algorithm</InputLabel>
-                    <Select
+                    <InputLabel id="algorithm">Algorithm</InputLabel>
+                    <SimpleSelect
                         name="algorithm"
-                        value={algorithm}
                         options={algorithmOptions}
-                        setValue={setAlgorithm}
+                        value={formState.algorithm}
+                        setValue={handleCommonParams}
                     />
                 </FormControl>
 
                 {/* DBSCAN */}
-                {algorithm === 'dbscan' && (
+                {formState.algorithm === 'dbscan' && (
                     <>
                         <FormControl margin="dense" fullWidth>
                             <Typography variant="caption">EPS</Typography>
                             <Slider
                                 name="eps"
-                                value={eps}
+                                value={formState.dbscan.eps}
                                 step={0.01}
                                 min={0.01}
                                 max={0.99}
-                                setValue={setEps}
+                                setValue={handleAlgorithmParams}
                             />
                         </FormControl>
                         <FormControl margin="dense" fullWidth>
@@ -108,18 +229,18 @@ const ClusterForm = () => {
                             </Typography>
                             <Slider
                                 name="minSamples"
-                                value={minSamples}
+                                value={formState.dbscan.minSamples}
                                 step={1}
                                 min={1}
                                 max={300}
-                                setValue={setMinSamples}
+                                setValue={handleAlgorithmParams}
                             />
                         </FormControl>
                     </>
                 )}
 
                 {/* KMeans */}
-                {algorithm === 'kmeans' && (
+                {formState.algorithm === 'kmeans' && (
                     <>
                         <FormControl margin="dense" fullWidth>
                             <Typography variant="caption">
@@ -127,18 +248,18 @@ const ClusterForm = () => {
                             </Typography>
                             <Slider
                                 name="nClusters"
-                                value={nClusters}
+                                value={formState.kmeans.nClusters}
                                 step={1}
-                                min={1}
+                                min={2}
                                 max={100}
-                                setValue={setNClusters}
+                                setValue={handleAlgorithmParams}
                             />
                         </FormControl>
                     </>
                 )}
 
                 {/* Agglomerative Clustering */}
-                {algorithm === 'agglomerative_clustering' && (
+                {formState.algorithm === 'agglomerativeClustering' && (
                     <>
                         <FormControl margin="dense" fullWidth>
                             <Typography variant="caption">
@@ -146,11 +267,103 @@ const ClusterForm = () => {
                             </Typography>
                             <Slider
                                 name="distanceThreshold"
-                                value={distanceThreshold}
+                                value={
+                                    formState.agglomerativeClustering
+                                        .distanceThreshold
+                                }
                                 step={1}
                                 min={1}
                                 max={100}
-                                setValue={setDistanceThreshold}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                    </>
+                )}
+
+                {/* Spectral Clustering */}
+                {formState.algorithm === 'spectralClustering' && (
+                    <>
+                        <FormControl margin="dense" fullWidth>
+                            <Typography variant="caption">
+                                Number of clusters
+                            </Typography>
+                            <Slider
+                                name="nClusters"
+                                value={formState.spectralClustering.nClusters}
+                                step={1}
+                                min={2}
+                                max={100}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                    </>
+                )}
+
+                {/* Optics */}
+                {formState.algorithm === 'optics' && (
+                    <>
+                        <FormControl margin="dense" fullWidth>
+                            <Typography variant="caption">
+                                Min. Samples
+                            </Typography>
+                            <Slider
+                                name="minSamples"
+                                value={formState.optics.minSamples}
+                                step={1}
+                                min={1}
+                                max={300}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                        <FormControl
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                        >
+                            <InputLabel id="metric">Metric</InputLabel>
+                            <SimpleSelect
+                                name="metric"
+                                options={metricOptions}
+                                value={formState.optics.metric}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                    </>
+                )}
+
+                {/* Gaussian Mixture */}
+                {formState.algorithm === 'gaussianMixture' && (
+                    <>
+                        <FormControl margin="dense" fullWidth>
+                            <Typography variant="caption">
+                                Number of components
+                            </Typography>
+                            <Slider
+                                name="nComponents"
+                                value={formState.gaussianMixture.nComponents}
+                                step={1}
+                                min={2}
+                                max={100}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                    </>
+                )}
+
+                {/* Birch */}
+                {formState.algorithm === 'birch' && (
+                    <>
+                        <FormControl margin="dense" fullWidth>
+                            <Typography variant="caption">
+                                Number of clusters
+                            </Typography>
+                            <Slider
+                                name="nClusters"
+                                value={formState.birch.nClusters}
+                                step={1}
+                                min={2}
+                                max={100}
+                                setValue={handleAlgorithmParams}
                             />
                         </FormControl>
                     </>
@@ -160,10 +373,8 @@ const ClusterForm = () => {
                     text="Compute"
                     type="submit"
                     color="primary"
-                    isLoading={buttonIsLoading}
-                    onChange={() => {
-                        setButtonIsLoading(true);
-                    }}
+                    isLoading={submitLoading}
+                    onClick={handleSubmit}
                 />
             </form>
         </Widget>

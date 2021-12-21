@@ -1,13 +1,10 @@
-import { useContext, useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/client';
+import ProjectorContext from 'app/contexts/projector';
 import Image from 'next/image';
-import Widget from 'app/components/elements/widget';
-import Box from '@material-ui/core/Box';
-import LockOpenIcon from '@material-ui/icons/LockOpen';
-import LockIcon from '@material-ui/icons/Lock';
-import ProjectorContext from 'app/contexts/projector/context';
+import Widget from 'app/components/modules/widget';
 import getImage from 'app/api/image';
 import PreviewImageWrapper from './style';
 
@@ -15,29 +12,50 @@ const PreviewImage = ({ imageName }) => {
     const [session] = useSession();
     const router = useRouter();
 
-    const { previewImageIsLocked, setPreviewImageIsLocked } =
-        useContext(ProjectorContext);
+    const { setOpenMessageBox } = useContext(ProjectorContext);
+    const { setErrorMessage } = useContext(ProjectorContext);
 
-    const [imageSrc, setImageSrc] = useState(null);
+    const [imageUrl, setImageUrl] = useState('');
+
+    const userId = session.user.email;
+    const experimentId = router.query.id;
 
     const fetchImage = () => {
-        getImage(session.user.email, router.query.id, imageName)
-            .then((url) => setImageSrc(url))
-            .catch((error) => console.log(error));
+        setImageUrl('');
+
+        getImage(userId, experimentId, imageName)
+            .then((url) => {
+                setImageUrl(url);
+            })
+            .catch((e) => {
+                setOpenMessageBox(true);
+                setErrorMessage(e.response.data.detail);
+            });
     };
 
-    useEffect(fetchImage, [session, router, imageName]);
-
-    const handleToggleLock = () => {
-        setPreviewImageIsLocked(!previewImageIsLocked);
-    };
+    useEffect(fetchImage, [
+        userId,
+        experimentId,
+        imageName,
+        setOpenMessageBox,
+        setErrorMessage,
+    ]);
 
     return (
-        <Widget>
+        <Widget title={imageName}>
             <PreviewImageWrapper>
-                {imageSrc && (
+                {imageUrl ? (
                     <Image
-                        src={imageSrc}
+                        src={imageUrl}
+                        alt="Preview Image"
+                        layout="fill"
+                        objectFit="contain"
+                        unoptimized
+                        data-testid="PreviewImageTest"
+                    />
+                ) : (
+                    <Image
+                        src="/preview-image-loader.gif"
                         alt="Preview Image"
                         layout="fill"
                         objectFit="contain"
@@ -45,21 +63,6 @@ const PreviewImage = ({ imageName }) => {
                         data-testid="PreviewImageTest"
                     />
                 )}
-                <Box
-                    position="absolute"
-                    bottom="-15px"
-                    right="-15px"
-                    height={30}
-                    width={30}
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    bgcolor="white"
-                    borderRadius="50%"
-                    onClick={handleToggleLock}
-                >
-                    {previewImageIsLocked ? <LockIcon /> : <LockOpenIcon />}
-                </Box>
             </PreviewImageWrapper>
         </Widget>
     );

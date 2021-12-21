@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/client';
 import DefaultLayout from 'app/components/layouts/default-layout';
 import PrimaryContent from 'app/components/modules/primary-content';
@@ -12,30 +12,93 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import DeleteIcon from '@material-ui/icons/Delete';
 import VisibilityIcon from '@material-ui/icons/Visibility';
-import DownloadIcon from '@material-ui/icons/CloudDownload';
 import Link from '@material-ui/core/Link';
 import { getExperiments, deleteExperiment } from 'app/api/experiment';
+import MessageBox from 'app/components/elements/message-box';
 
 const ExperimentTemplate = () => {
     const [session] = useSession();
 
+    const [openMessageBox, setOpenMessageBox] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+
     const [experiments, setExperiments] = useState([]);
 
-    const fetchData = () => {
-        getExperiments(session.user.email)
-            .then((options) => {
-                setExperiments(options);
-            })
-            .catch((error) => console.log(error));
+    const userId = session.user.email;
+
+    const handleCloseMessageBox = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setOpenMessageBox(false);
     };
 
-    useEffect(fetchData, [session]);
+    const renderMessageBox = () => (
+        <MessageBox
+            message={errorMessage}
+            severity="error"
+            open={openMessageBox}
+            handleClose={handleCloseMessageBox}
+        />
+    );
+
+    const fetchExperiments = () => {
+        getExperiments(userId)
+            .then((results) => {
+                setExperiments(results);
+            })
+            .catch((e) => {
+                setOpenMessageBox(true);
+                setErrorMessage(e.response.data.message);
+            });
+    };
 
     const handleDeleteExperiment = (experimentId) => {
-        deleteExperiment(session.user.email, experimentId)
-            .then(fetchData)
-            .catch((error) => console.log(error));
+        deleteExperiment(userId, experimentId)
+            .then(fetchExperiments)
+            .catch((e) => {
+                setOpenMessageBox(true);
+                setErrorMessage(e.response.data.message);
+            });
     };
+
+    const renderTableRow = () =>
+        experiments.map((experiment) => (
+            <TableRow key={experiment.id}>
+                <TableCell align="center">{experiment.metadata.name}</TableCell>
+                <TableCell align="center">
+                    {experiment.metadata.image.dim} x{' '}
+                    {experiment.metadata.image.dim}
+                </TableCell>
+                <TableCell align="center">
+                    {Object.keys(experiment.metadata.image.channels.map).length}
+                </TableCell>
+                <TableCell align="center">
+                    {JSON.stringify(experiment.metadata.image.channels.preview)}
+                </TableCell>
+                <TableCell align="center">
+                    {experiment.metadata.architecture.name}
+                </TableCell>
+                <TableCell align="center">
+                    {experiment.metadata.architecture.latent_dim}
+                </TableCell>
+                <TableCell align="center">
+                    <Link onClick={() => handleDeleteExperiment(experiment.id)}>
+                        <DeleteIcon />
+                    </Link>
+                </TableCell>
+                <TableCell align="center">
+                    <Link
+                        href={`/projector/${encodeURIComponent(experiment.id)}`}
+                    >
+                        <VisibilityIcon />
+                    </Link>
+                </TableCell>
+            </TableRow>
+        ));
+
+    useEffect(fetchExperiments, [userId]);
 
     return (
         <DefaultLayout>
@@ -65,80 +128,16 @@ const ExperimentTemplate = () => {
                                     <TableCell align="center">
                                         Latent dim.
                                     </TableCell>
-                                    <TableCell align="center">
-                                        Download meta.
-                                    </TableCell>
                                     <TableCell align="center">Delete</TableCell>
                                     <TableCell align="center">Show</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {experiments &&
-                                    Array.isArray(experiments) &&
-                                    experiments.map((experiment) => (
-                                        <TableRow key={experiment.id}>
-                                            <TableCell align="center">
-                                                {experiment.metadata.name}
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                {experiment.metadata.image.dim}{' '}
-                                                x{' '}
-                                                {experiment.metadata.image.dim}
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                {
-                                                    Object.keys(
-                                                        experiment.metadata
-                                                            .image.channels.map,
-                                                    ).length
-                                                }
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                {JSON.stringify(
-                                                    experiment.metadata.image
-                                                        .channels.preview,
-                                                )}
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                {
-                                                    experiment.metadata
-                                                        .architecture.name
-                                                }
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                {
-                                                    experiment.metadata
-                                                        .architecture.latent_dim
-                                                }
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                <DownloadIcon />
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                <Link
-                                                    onClick={() =>
-                                                        handleDeleteExperiment(
-                                                            experiment.id,
-                                                        )
-                                                    }
-                                                >
-                                                    <DeleteIcon />
-                                                </Link>
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                <Link
-                                                    href={`/projector/${encodeURIComponent(
-                                                        experiment.id,
-                                                    )}`}
-                                                >
-                                                    <VisibilityIcon />
-                                                </Link>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
+                                {experiments && renderTableRow()}
                             </TableBody>
                         </Table>
                     </TableContainer>
+                    {renderMessageBox()}
                 </>
             </PrimaryContent>
         </DefaultLayout>

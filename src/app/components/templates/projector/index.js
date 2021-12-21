@@ -1,30 +1,59 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import ProjectorLayout from 'app/components/layouts/projector-layout';
+import ProjectorContext from 'app/contexts/projector';
 import SideBar from 'app/components/modules/sidebar';
 import PrimaryContent from 'app/components/modules/primary-content';
-import Graph from 'app/components/elements/graph';
-import ProjectorContext from 'app/contexts/projector/context';
 import VisualizationForm from 'app/components/modules/forms/visualization';
 import ReductionForm from 'app/components/modules/forms/reduction';
 import ClusterForm from 'app/components/modules/forms/cluster';
+import MessageBox from 'app/components/elements/message-box';
+import Graph from 'app/components/elements/graph';
 import PreviewImage from 'app/components/elements/preview-image';
-import ClustersList from 'app/components/elements/clusters-list';
 
 const ProjectorTemplate = () => {
+    const [openMessageBox, setOpenMessageBox] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+
+    const [updateReductions, setUpdateReductions] = useState(false);
+    const [updateClusters, setUpdateClusters] = useState(false);
+
     const [graphData, setGraphData] = useState([]);
+
     const [previewImage, setPreviewImage] = useState('');
-    const [previewImageIsLocked, setPreviewImageIsLocked] = useState(false);
+
+    const handleCloseMessageBox = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setOpenMessageBox(false);
+    };
+
+    const renderMessageBox = () => (
+        <MessageBox
+            message={errorMessage}
+            severity="error"
+            open={openMessageBox}
+            handleClose={handleCloseMessageBox}
+        />
+    );
 
     return (
         <ProjectorLayout>
             <ProjectorContext.Provider
                 value={{
+                    openMessageBox,
+                    setOpenMessageBox,
+                    errorMessage,
+                    setErrorMessage,
+                    updateReductions,
+                    setUpdateReductions,
+                    updateClusters,
+                    setUpdateClusters,
                     graphData,
                     setGraphData,
                     previewImage,
                     setPreviewImage,
-                    previewImageIsLocked,
-                    setPreviewImageIsLocked,
                 }}
             >
                 <SideBar column={1}>
@@ -42,9 +71,9 @@ const ProjectorTemplate = () => {
                         {previewImage && (
                             <PreviewImage imageName={previewImage} />
                         )}
-                        {graphData.length > 0 && <ClustersList />}
                     </>
                 </SideBar>
+                {renderMessageBox()}
             </ProjectorContext.Provider>
         </ProjectorLayout>
     );

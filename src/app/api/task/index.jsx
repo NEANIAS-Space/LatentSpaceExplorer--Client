@@ -3,7 +3,7 @@ import sleep from 'app/utils/chronos';
 
 const getTask = async (taskId) => {
     const result = await api()
-        .get(`/task/${taskId}`)
+        .get(`/tasks/${taskId}`)
         .then((task) => {
             if (task.status === 'SUCCESS') {
                 return task;

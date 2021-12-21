@@ -2,7 +2,8 @@ import axios from 'axios';
 
 const api = (userId) => {
     const args = {
-        baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+        // baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+        baseURL: '/server',
         headers: {
             'Content-Type': 'application/json',
             'User-ID': userId,
@@ -13,7 +14,7 @@ const api = (userId) => {
 
     instance.interceptors.response.use(
         (response) => response.data,
-        (error) => error,
+        (error) => Promise.reject(error),
     );
 
     return instance;

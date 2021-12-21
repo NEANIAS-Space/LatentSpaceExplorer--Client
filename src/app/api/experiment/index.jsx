@@ -1,21 +1,21 @@
 import api from 'app/api';
 
 const getExperiments = async (userId) => {
-    const task = await api(userId).get('/experiments');
+    const experiments = await api(userId).get('/experiments');
 
-    return task;
+    return experiments;
 };
 
 const getExperiment = async (userId, experimentId) => {
-    const task = await api(userId).get(`/experiments/${experimentId}`);
+    const experiment = await api(userId).get(`/experiments/${experimentId}`);
 
-    return task;
+    return experiment;
 };
 
 const deleteExperiment = async (userId, experimentId) => {
-    const task = await api(userId).delete(`/experiments/${experimentId}`);
+    const confirm = await api(userId).delete(`/experiments/${experimentId}`);
 
-    return task;
+    return confirm;
 };
 
 export { getExperiments, getExperiment, deleteExperiment };

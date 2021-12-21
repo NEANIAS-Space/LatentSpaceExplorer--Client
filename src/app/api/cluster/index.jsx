@@ -8,6 +8,13 @@ const getClusters = async (userId, experimentId) => {
     return clusters;
 };
 
+const getPendingClustersCount = async (userId, experimentId) => {
+    const result = await api(userId).get(
+        `/experiments/${experimentId}/clusters/pending`,
+    );
+    return result;
+};
+
 const getCluster = async (userId, experimentId, clusterId) => {
     const cluster = await api(userId).get(
         `/experiments/${experimentId}/clusters/${clusterId}`,
@@ -30,4 +37,4 @@ const postCluster = async (userId, experimentId, algorithm, params) => {
     return task;
 };
 
-export { getClusters, getCluster, postCluster };
+export { getClusters, getPendingClustersCount, getCluster, postCluster };

@@ -1,5 +1,4 @@
 import { createTheme } from '@material-ui/core/styles';
-import blue from '@material-ui/core/colors/blue';
 
 // Default theme istance
 const defaultTheme = createTheme();
@@ -25,11 +24,6 @@ const theme = createTheme({
                 width: '90%',
                 display: 'block',
                 margin: '0 auto',
-            },
-        },
-        MuiLink: {
-            root: {
-                color: blue[500],
             },
         },
     },
