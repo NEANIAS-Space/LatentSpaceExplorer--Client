@@ -26,7 +26,7 @@ const ClusterForm = () => {
 
     const { setUpdateClusters } = useContext(ProjectorContext);
 
-    const monitoringFrequency = 1000;
+    const monitoringFrequency = 5000;
     const [monitoringPendingCount, setMonitoringPendingCount] = useState(false);
     const [previousPendingCount, setPreviousPendingCount] = useState(0);
     const [pendingCount, setPendingCount] = useState(0);
