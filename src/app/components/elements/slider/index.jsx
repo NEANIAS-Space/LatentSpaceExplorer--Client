@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import { Slider as MUISlider } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Input from '@material-ui/core/Input';
+import TextField from '@material-ui/core/TextField';
 
 const Slider = ({ name, value, step, min, max, setValue, onChange }) => {
     const marks = [
@@ -17,21 +18,30 @@ const Slider = ({ name, value, step, min, max, setValue, onChange }) => {
                 type: 'number',
             },
         };
+
         setValue(event);
         onChange();
     };
 
-    const handleInputChange = (event) => {
-        setValue(event);
-        onChange();
-    };
+    const handleInputChange = (e) => {
+        let newValue = Number(e.target.value);
 
-    const handleBlur = () => {
-        if (value < min) {
-            setValue(min);
-        } else if (value > max) {
-            setValue(max);
+        if (newValue < min) {
+            newValue = min;
+        } else if (newValue > max) {
+            newValue = min;
         }
+
+        const event = {
+            target: {
+                name,
+                value: newValue,
+                type: 'number',
+            },
+        };
+
+        setValue(event);
+        onChange();
     };
 
     return (
@@ -58,12 +68,12 @@ const Slider = ({ name, value, step, min, max, setValue, onChange }) => {
                     name={name}
                     value={value}
                     margin="dense"
-                    onBlur={handleBlur}
                     onChange={handleInputChange}
+                    component={TextField}
                     inputProps={{
-                        step: { step },
-                        min: { min },
-                        max: { max },
+                        step,
+                        min,
+                        max,
                         type: 'number',
                     }}
                 />
