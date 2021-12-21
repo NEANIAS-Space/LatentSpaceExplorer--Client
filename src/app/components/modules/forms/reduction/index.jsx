@@ -139,7 +139,7 @@ const ReductionForm = () => {
             .catch((e) => {
                 setMonitoringPendingCount(false);
                 setOpenMessageBox(true);
-                setErrorMessage(JSON.stringify(e.response.data.detail));
+                setErrorMessage(e.response.data.message);
             });
     };
 
@@ -172,7 +172,7 @@ const ReductionForm = () => {
                 )
                 .catch((e) => {
                     setOpenMessageBox(true);
-                    setErrorMessage(JSON.stringify(e.response.data.detail));
+                    setErrorMessage(e.response.data.message);
                     setSubmitLoading(false);
                 });
         }

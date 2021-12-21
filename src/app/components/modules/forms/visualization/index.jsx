@@ -83,7 +83,7 @@ const VisualizationForm = () => {
                 })
                 .catch((e) => {
                     setOpenMessageBox(true);
-                    setErrorMessage(e.response.data.detail);
+                    setErrorMessage(e.response.data.message);
                 });
         }
     };
@@ -118,7 +118,7 @@ const VisualizationForm = () => {
                 })
                 .catch((e) => {
                     setOpenMessageBox(true);
-                    setErrorMessage(e.response.data.detail);
+                    setErrorMessage(e.response.data.message);
                 });
         }
     };
@@ -136,7 +136,7 @@ const VisualizationForm = () => {
             })
             .catch((e) => {
                 setOpenMessageBox(true);
-                setErrorMessage(e.response.data.detail);
+                setErrorMessage(e.response.data.message);
             });
     };
 
@@ -164,7 +164,7 @@ const VisualizationForm = () => {
                 })
                 .catch((e) => {
                     setOpenMessageBox(true);
-                    setErrorMessage(e.response.data.detail);
+                    setErrorMessage(e.response.data.message);
                 });
         } else if (reductionId && labelId) {
             getReduction(userId, experimentId, reductionId)
@@ -184,7 +184,7 @@ const VisualizationForm = () => {
                 })
                 .catch((e) => {
                     setOpenMessageBox(true);
-                    setErrorMessage(e.response.data.detail);
+                    setErrorMessage(e.response.data.message);
                 });
         } else if (reductionId) {
             getReduction(userId, experimentId, reductionId)
@@ -204,7 +204,7 @@ const VisualizationForm = () => {
                 })
                 .catch((e) => {
                     setOpenMessageBox(true);
-                    setErrorMessage(e.response.data.detail);
+                    setErrorMessage(e.response.data.message);
                 });
         }
     };

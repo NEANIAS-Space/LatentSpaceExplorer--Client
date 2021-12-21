@@ -133,7 +133,7 @@ const ClusterForm = () => {
             .catch((e) => {
                 setMonitoringPendingCount(false);
                 setOpenMessageBox(true);
-                setErrorMessage(JSON.stringify(e.response.data.detail));
+                setErrorMessage(e.response.data.message);
             });
     };
 
@@ -165,7 +165,7 @@ const ClusterForm = () => {
                 )
                 .catch((e) => {
                     setOpenMessageBox(true);
-                    setErrorMessage(JSON.stringify(e.response.data.detail));
+                    setErrorMessage(e.response.data.message);
                     setSubmitLoading(false);
                 });
         }

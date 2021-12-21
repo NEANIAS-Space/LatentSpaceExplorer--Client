@@ -50,7 +50,7 @@ const ExperimentTemplate = () => {
             })
             .catch((e) => {
                 setOpenMessageBox(true);
-                setErrorMessage(e.response.data.detail);
+                setErrorMessage(e.response.data.message);
             });
     };
 
