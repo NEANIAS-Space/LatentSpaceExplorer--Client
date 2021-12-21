@@ -1,4 +1,4 @@
-const reductionFormReducer = (state, action) => {
+const projectorFormReducer = (state, action) => {
     switch (action.type) {
         case 'COMMON':
             return {
@@ -20,4 +20,4 @@ const reductionFormReducer = (state, action) => {
     }
 };
 
-export default reductionFormReducer;
+export default projectorFormReducer;
