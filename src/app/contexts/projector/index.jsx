@@ -7,6 +7,8 @@ const ProjectorContext = createContext({
     setErrorMessage: () => {},
     updateReductions: true,
     setUpdateReductions: () => {},
+    updateClusters: true,
+    setUpdateClusters: () => {},
     graphData: [],
     setGraphData: () => {},
 });

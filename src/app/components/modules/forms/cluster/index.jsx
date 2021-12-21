@@ -1,4 +1,4 @@
-import { useState, useContext, useReducer, useEffect } from 'react';
+import { useContext, useState, useEffect, useReducer } from 'react';
 import { useSession } from 'next-auth/client';
 import { useRouter } from 'next/router';
 import ProjectorContext from 'app/contexts/projector';
@@ -6,7 +6,6 @@ import projectorFormReducer from 'app/reducers/projector';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Typography from '@material-ui/core/Typography';
-import Switch from '@material-ui/core/Switch';
 import Tooltip from '@material-ui/core/Tooltip';
 import Badge from '@material-ui/core/Badge';
 import ScheduleIcon from '@material-ui/icons/Schedule';
@@ -14,18 +13,18 @@ import Widget from 'app/components/modules/widget';
 import SimpleSelect from 'app/components/elements/selects/simple';
 import Slider from 'app/components/elements/slider';
 import LoadingButton from 'app/components/elements/loading-button';
-import { postReduction, getPendingReductionsCount } from 'app/api/reduction';
+import { postCluster, getPendingClustersCount } from 'app/api/cluster';
 import sleep from 'app/utils/chronos';
 import humps from 'humps';
 
-const ReductionForm = () => {
+const ClusterForm = () => {
     const [session] = useSession();
     const router = useRouter();
 
     const { setOpenMessageBox } = useContext(ProjectorContext);
     const { setErrorMessage } = useContext(ProjectorContext);
 
-    const { setUpdateReductions } = useContext(ProjectorContext);
+    const { setUpdateClusters } = useContext(ProjectorContext);
 
     const monitoringFrequency = 1000;
     const [monitoringPendingCount, setMonitoringPendingCount] = useState(false);
@@ -38,24 +37,29 @@ const ReductionForm = () => {
     const experimentId = router.query.id;
 
     const initialFormState = {
-        algorithm: 'pca',
-        components: 2,
-        tsne: {
-            perplexity: 10,
-            iterations: 1000,
-            learningRate: 200,
-            metric: 'euclidean',
-            init: 'random',
+        algorithm: 'dbscan',
+        dbscan: {
+            eps: 0.5,
+            minSamples: 5,
         },
-        umap: {
-            neighbors: 15,
-            minDistance: 0.1,
-            metric: 'euclidean',
-            densmap: false,
+        kmeans: {
+            nClusters: 8,
         },
-        isomap: {
-            neighbors: 15,
+        agglomerativeClustering: {
+            distanceThreshold: 5,
+        },
+        spectralClustering: {
+            nClusters: 8,
+        },
+        optics: {
+            minSamples: 5,
             metric: 'euclidean',
+        },
+        gaussianMixture: {
+            nComponents: 2,
+        },
+        birch: {
+            nClusters: 3,
         },
     };
 
@@ -65,28 +69,22 @@ const ReductionForm = () => {
     );
 
     const algorithmOptions = [
-        { id: 'pca', value: 'pca' },
-        { id: 'tsne', value: 'tsne' },
-        { id: 'umap', value: 'umap' },
-        { id: 'truncatedSvd', value: 'truncated svd' },
-        { id: 'spectralEmbedding', value: 'spectral embedding' },
-        { id: 'isomap', value: 'isomap' },
-        { id: 'mds', value: 'mds' },
-    ];
-
-    const componentsOptions = [
-        { id: 2, value: 2 },
-        { id: 3, value: 3 },
+        { id: 'dbscan', value: 'dbscan' },
+        { id: 'affinityPropagation', value: 'affinity propagation' },
+        { id: 'kmeans', value: 'kmeans' },
+        {
+            id: 'agglomerativeClustering',
+            value: 'agglomerative clustering',
+        },
+        { id: 'spectralClustering', value: 'spectral clustering' },
+        { id: 'optics', value: 'optics' },
+        { id: 'gaussianMixture', value: 'gaussian mixture' },
+        { id: 'birch', value: 'birch' },
     ];
 
     const metricOptions = [
         { id: 'euclidean', value: 'euclidean' },
         { id: 'cosine', value: 'cosine' },
-    ];
-
-    const initOptions = [
-        { id: 'random', value: 'random' },
-        { id: 'pca', value: 'pca' },
     ];
 
     const handleCommonParams = (event) => {
@@ -105,10 +103,6 @@ const ReductionForm = () => {
                 value = Number(event.target.value);
                 break;
 
-            case 'checkbox':
-                value = Boolean(event.target.checked);
-                break;
-
             default:
                 value = String(event.target.value);
         }
@@ -124,7 +118,7 @@ const ReductionForm = () => {
     const fetchPendingCount = () => {
         setMonitoringPendingCount(true);
 
-        getPendingReductionsCount(userId, experimentId)
+        getPendingClustersCount(userId, experimentId)
             .then((tasks) => {
                 setPreviousPendingCount(pendingCount);
                 setPendingCount(tasks.count);
@@ -147,15 +141,14 @@ const ReductionForm = () => {
         if (!submitLoading) {
             setSubmitLoading(true);
 
-            const { algorithm, components } = formState;
+            const { algorithm } = formState;
             const hasParams = !!formState[algorithm];
             const params = hasParams ? formState[algorithm] : {};
 
-            postReduction(
+            postCluster(
                 userId,
                 experimentId,
                 humps.decamelize(algorithm, { separator: '_' }),
-                components,
                 humps.decamelizeKeys(params, { separator: '_' }),
             )
                 .then(() =>
@@ -181,19 +174,19 @@ const ReductionForm = () => {
     useEffect(() => {
         if (pendingCount <= previousPendingCount) {
             // update visualization form
-            setUpdateReductions(true);
+            setUpdateClusters(true);
         }
-    }, [previousPendingCount, pendingCount, setUpdateReductions]);
+    }, [previousPendingCount, pendingCount, setUpdateClusters]);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(fetchPendingCount, []);
 
     return (
         <Widget
-            title="Reduction"
+            title="Cluster"
             icon={
                 <>
-                    <Tooltip title="Pending reductions">
+                    <Tooltip title="Pending clusters">
                         <Badge badgeContent={pendingCount} color="secondary">
                             <ScheduleIcon
                                 color={
@@ -215,154 +208,110 @@ const ReductionForm = () => {
                         setValue={handleCommonParams}
                     />
                 </FormControl>
-                <FormControl variant="outlined" margin="dense" fullWidth>
-                    <InputLabel id="components">Components</InputLabel>
-                    <SimpleSelect
-                        name="components"
-                        options={componentsOptions}
-                        value={formState.components}
-                        setValue={handleCommonParams}
-                    />
-                </FormControl>
 
-                {/* TSNE */}
-                {formState.algorithm === 'tsne' && (
+                {/* DBSCAN */}
+                {formState.algorithm === 'dbscan' && (
                     <>
                         <FormControl margin="dense" fullWidth>
-                            <Typography variant="caption">
-                                Perplexity
-                            </Typography>
+                            <Typography variant="caption">EPS</Typography>
                             <Slider
-                                name="perplexity"
-                                value={formState.tsne.perplexity}
-                                step={1}
-                                min={5}
-                                max={50}
-                                setValue={handleAlgorithmParams}
-                            />
-                        </FormControl>
-                        <FormControl margin="dense" fullWidth>
-                            <Typography variant="caption">
-                                Iterations
-                            </Typography>
-                            <Slider
-                                name="iterations"
-                                value={formState.tsne.iterations}
-                                step={1}
-                                min={250}
-                                max={5000}
-                                setValue={handleAlgorithmParams}
-                            />
-                        </FormControl>
-                        <FormControl margin="dense" fullWidth>
-                            <Typography variant="caption">
-                                Learning Rate
-                            </Typography>
-                            <Slider
-                                name="learningRate"
-                                value={formState.tsne.learningRate}
-                                step={1}
-                                min={10}
-                                max={1000}
-                                setValue={handleAlgorithmParams}
-                            />
-                        </FormControl>
-                        <FormControl
-                            variant="outlined"
-                            margin="dense"
-                            fullWidth
-                        >
-                            <InputLabel id="metric">Metric</InputLabel>
-                            <SimpleSelect
-                                name="metric"
-                                options={metricOptions}
-                                value={formState.tsne.metric}
-                                setValue={handleAlgorithmParams}
-                            />
-                        </FormControl>
-                        <FormControl
-                            variant="outlined"
-                            margin="dense"
-                            fullWidth
-                        >
-                            <InputLabel id="init">init</InputLabel>
-                            <SimpleSelect
-                                name="init"
-                                options={initOptions}
-                                value={formState.tsne.init}
-                                setValue={handleAlgorithmParams}
-                            />
-                        </FormControl>
-                    </>
-                )}
-
-                {/* UMAP */}
-                {formState.algorithm === 'umap' && (
-                    <>
-                        <FormControl margin="dense" fullWidth>
-                            <Typography variant="caption">Neighbors</Typography>
-                            <Slider
-                                name="neighbors"
-                                value={formState.umap.neighbors}
-                                step={1}
-                                min={2}
-                                max={200}
-                                setValue={handleAlgorithmParams}
-                            />
-                        </FormControl>
-                        <FormControl margin="dense" fullWidth>
-                            <Typography variant="caption">
-                                Min. Distance
-                            </Typography>
-                            <Slider
-                                name="minDistance"
-                                value={formState.umap.minDistance}
+                                name="eps"
+                                value={formState.dbscan.eps}
                                 step={0.01}
                                 min={0.01}
                                 max={0.99}
                                 setValue={handleAlgorithmParams}
                             />
                         </FormControl>
-                        <FormControl
-                            variant="outlined"
-                            margin="dense"
-                            fullWidth
-                        >
-                            <InputLabel id="metric">Metric</InputLabel>
-                            <SimpleSelect
-                                name="metric"
-                                options={metricOptions}
-                                value={formState.umap.metric}
+                        <FormControl margin="dense" fullWidth>
+                            <Typography variant="caption">
+                                Min. Samples
+                            </Typography>
+                            <Slider
+                                name="minSamples"
+                                value={formState.dbscan.minSamples}
+                                step={1}
+                                min={1}
+                                max={300}
                                 setValue={handleAlgorithmParams}
-                            />
-                        </FormControl>
-                        <FormControl
-                            variant="outlined"
-                            margin="dense"
-                            fullWidth
-                        >
-                            <Typography variant="caption">Densmap</Typography>
-                            <Switch
-                                name="densmap"
-                                checked={formState.umap.densmap}
-                                onChange={handleAlgorithmParams}
-                                color="primary"
                             />
                         </FormControl>
                     </>
                 )}
 
-                {/* Isomap */}
-                {formState.algorithm === 'isomap' && (
+                {/* KMeans */}
+                {formState.algorithm === 'kmeans' && (
                     <>
                         <FormControl margin="dense" fullWidth>
-                            <Typography variant="caption">Neighbors</Typography>
+                            <Typography variant="caption">
+                                Number of clusters
+                            </Typography>
                             <Slider
-                                name="neighbors"
-                                value={formState.isomap.neighbors}
+                                name="nClusters"
+                                value={formState.kmeans.nClusters}
                                 step={1}
                                 min={2}
-                                max={200}
+                                max={100}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                    </>
+                )}
+
+                {/* Agglomerative Clustering */}
+                {formState.algorithm === 'agglomerativeClustering' && (
+                    <>
+                        <FormControl margin="dense" fullWidth>
+                            <Typography variant="caption">
+                                Distance Threshold
+                            </Typography>
+                            <Slider
+                                name="distanceThreshold"
+                                value={
+                                    formState.agglomerativeClustering
+                                        .distanceThreshold
+                                }
+                                step={1}
+                                min={1}
+                                max={100}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                    </>
+                )}
+
+                {/* Spectral Clustering */}
+                {formState.algorithm === 'spectralClustering' && (
+                    <>
+                        <FormControl margin="dense" fullWidth>
+                            <Typography variant="caption">
+                                Number of clusters
+                            </Typography>
+                            <Slider
+                                name="nClusters"
+                                value={formState.spectralClustering.nClusters}
+                                step={1}
+                                min={2}
+                                max={100}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                    </>
+                )}
+
+                {/* Optics */}
+                {formState.algorithm === 'optics' && (
+                    <>
+                        <FormControl margin="dense" fullWidth>
+                            <Typography variant="caption">
+                                Min. Samples
+                            </Typography>
+                            <Slider
+                                name="minSamples"
+                                value={formState.optics.minSamples}
+                                step={1}
+                                min={1}
+                                max={300}
                                 setValue={handleAlgorithmParams}
                             />
                         </FormControl>
@@ -375,7 +324,45 @@ const ReductionForm = () => {
                             <SimpleSelect
                                 name="metric"
                                 options={metricOptions}
-                                value={formState.isomap.metric}
+                                value={formState.optics.metric}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                    </>
+                )}
+
+                {/* Gaussian Mixture */}
+                {formState.algorithm === 'gaussianMixture' && (
+                    <>
+                        <FormControl margin="dense" fullWidth>
+                            <Typography variant="caption">
+                                Number of components
+                            </Typography>
+                            <Slider
+                                name="nComponents"
+                                value={formState.gaussianMixture.nComponents}
+                                step={1}
+                                min={2}
+                                max={100}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                    </>
+                )}
+
+                {/* Birch */}
+                {formState.algorithm === 'birch' && (
+                    <>
+                        <FormControl margin="dense" fullWidth>
+                            <Typography variant="caption">
+                                Number of clusters
+                            </Typography>
+                            <Slider
+                                name="nClusters"
+                                value={formState.birch.nClusters}
+                                step={1}
+                                min={2}
+                                max={100}
                                 setValue={handleAlgorithmParams}
                             />
                         </FormControl>
@@ -394,4 +381,4 @@ const ReductionForm = () => {
     );
 };
 
-export default ReductionForm;
+export default ClusterForm;

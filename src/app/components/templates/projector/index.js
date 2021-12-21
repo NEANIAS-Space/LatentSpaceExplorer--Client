@@ -5,6 +5,7 @@ import SideBar from 'app/components/modules/sidebar';
 import PrimaryContent from 'app/components/modules/primary-content';
 import VisualizationForm from 'app/components/modules/forms/visualization';
 import ReductionForm from 'app/components/modules/forms/reduction';
+import ClusterForm from 'app/components/modules/forms/cluster';
 import MessageBox from 'app/components/elements/message-box';
 import Graph from 'app/components/elements/graph';
 import PreviewImage from 'app/components/elements/preview-image';
@@ -14,6 +15,7 @@ const ProjectorTemplate = () => {
     const [errorMessage, setErrorMessage] = useState('');
 
     const [updateReductions, setUpdateReductions] = useState(false);
+    const [updateClusters, setUpdateClusters] = useState(false);
 
     const [graphData, setGraphData] = useState([]);
 
@@ -46,6 +48,8 @@ const ProjectorTemplate = () => {
                     setErrorMessage,
                     updateReductions,
                     setUpdateReductions,
+                    updateClusters,
+                    setUpdateClusters,
                     graphData,
                     setGraphData,
                     previewImage,
@@ -56,6 +60,7 @@ const ProjectorTemplate = () => {
                     <>
                         <VisualizationForm />
                         <ReductionForm />
+                        <ClusterForm />
                     </>
                 </SideBar>
                 <PrimaryContent>

@@ -20,6 +20,7 @@ const VisualizationForm = () => {
 
     const { updateReductions, setUpdateReductions } =
         useContext(ProjectorContext);
+    const { updateClusters, setUpdateClusters } = useContext(ProjectorContext);
 
     const { setGraphData } = useContext(ProjectorContext);
 
@@ -88,34 +89,38 @@ const VisualizationForm = () => {
     };
 
     const fetchClusters = () => {
-        getClusters(userId, experimentId)
-            .then((results) => {
-                const options = results.map((option) => {
-                    const {
-                        id,
-                        metadata: {
+        if (updateClusters) {
+            setUpdateClusters(false);
+
+            getClusters(userId, experimentId)
+                .then((results) => {
+                    const options = results.map((option) => {
+                        const {
+                            id,
+                            metadata: {
+                                algorithm,
+                                params,
+                                start_datetime: datetime,
+                            },
+                        } = option;
+
+                        return {
+                            id,
                             algorithm,
                             params,
-                            start_datetime: datetime,
-                        },
-                    } = option;
+                            datetime,
+                        };
+                    });
 
-                    return {
-                        id,
-                        algorithm,
-                        params,
-                        datetime,
-                    };
+                    options.sort(compare);
+
+                    setClusters(options);
+                })
+                .catch((e) => {
+                    setOpenMessageBox(true);
+                    setErrorMessage(e.response.data.detail);
                 });
-
-                options.sort(compare);
-
-                setClusters(options);
-            })
-            .catch((e) => {
-                setOpenMessageBox(true);
-                setErrorMessage(e.response.data.detail);
-            });
+        }
     };
 
     const fetchLabels = () => {
@@ -225,6 +230,8 @@ const VisualizationForm = () => {
         experimentId,
         setOpenMessageBox,
         setErrorMessage,
+        updateClusters,
+        setUpdateClusters,
     ]);
     useEffect(fetchLabels, [
         userId,
