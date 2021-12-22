@@ -141,7 +141,7 @@ const VisualizationForm = () => {
     };
 
     const fetchGraphData = () => {
-        if (reductionId && clusterId) {
+        if (reductionId && (clusterId || clusterId === 0)) {
             Promise.all([
                 getReduction(userId, experimentId, reductionId),
                 getCluster(userId, experimentId, clusterId),
@@ -166,7 +166,7 @@ const VisualizationForm = () => {
                     setOpenMessageBox(true);
                     setErrorMessage(e.response.data.message);
                 });
-        } else if (reductionId && labelId) {
+        } else if (reductionId && (labelId || labelId === 0)) {
             getReduction(userId, experimentId, reductionId)
                 .then((result) => {
                     const { ids, points } = result;
