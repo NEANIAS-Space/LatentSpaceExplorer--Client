@@ -13,8 +13,31 @@ const api = (userId) => {
     const instance = axios.create(args);
 
     instance.interceptors.response.use(
-        (response) => response.data,
-        (error) => Promise.reject(error),
+        (response) => response,
+        (error) => {
+            if (!error.response.data.message) {
+                switch (error.response.status) {
+                    case 500:
+                        // eslint-disable-next-line no-param-reassign
+                        error.response.data = {
+                            message: 'Generic server error',
+                        };
+                        break;
+
+                    case 502:
+                        // eslint-disable-next-line no-param-reassign
+                        error.response.data = {
+                            message: 'Server not available',
+                        };
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+
+            return Promise.reject(error);
+        },
     );
 
     return instance;
