@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import Tooltip from '@material-ui/core/Tooltip';
+import DownloadIcon from '@material-ui/icons/GetApp';
 import ProjectorLayout from 'app/components/layouts/projector-layout';
 import ProjectorContext from 'app/contexts/projector';
 import SideBar from 'app/components/modules/sidebar';
@@ -7,8 +9,11 @@ import VisualizationForm from 'app/components/modules/forms/visualization';
 import ReductionForm from 'app/components/modules/forms/reduction';
 import ClusterForm from 'app/components/modules/forms/cluster';
 import MessageBox from 'app/components/elements/message-box';
-import Graph from 'app/components/elements/graph';
+import ScatterGraph from 'app/components/elements/graphs/scatter';
+import SilhouetteGraph from 'app/components/elements/graphs/silhouette';
+import BarGraph from 'app/components/elements/graphs/bar';
 import PreviewImage from 'app/components/elements/preview-image';
+import Widget from 'app/components/modules/widget';
 
 const ProjectorTemplate = () => {
     const [openMessageBox, setOpenMessageBox] = useState(false);
@@ -17,7 +22,9 @@ const ProjectorTemplate = () => {
     const [updateReductions, setUpdateReductions] = useState(false);
     const [updateClusters, setUpdateClusters] = useState(false);
 
-    const [graphData, setGraphData] = useState([]);
+    const [scatterGraphData, setScatterGraphData] = useState([]);
+    const [silhouetteGraphData, setSilhouetteGraphData] = useState([]);
+    const [barGraphData, setBarGraphData] = useState([]);
 
     const [previewImage, setPreviewImage] = useState('');
 
@@ -50,8 +57,12 @@ const ProjectorTemplate = () => {
                     setUpdateReductions,
                     updateClusters,
                     setUpdateClusters,
-                    graphData,
-                    setGraphData,
+                    scatterGraphData,
+                    setScatterGraphData,
+                    silhouetteGraphData,
+                    setSilhouetteGraphData,
+                    barGraphData,
+                    setBarGraphData,
                     previewImage,
                     setPreviewImage,
                 }}
@@ -64,12 +75,29 @@ const ProjectorTemplate = () => {
                     </>
                 </SideBar>
                 <PrimaryContent>
-                    <Graph />
+                    <ScatterGraph />
                 </PrimaryContent>
                 <SideBar column={3}>
                     <>
                         {previewImage && (
                             <PreviewImage imageName={previewImage} />
+                        )}
+                        {silhouetteGraphData.length > 0 && (
+                            <Widget title="Silhouettes">
+                                <SilhouetteGraph />
+                            </Widget>
+                        )}
+                        {barGraphData.length > 0 && (
+                            <Widget
+                                title="Clusters"
+                                // icon={
+                                //     <Tooltip title="Download clusters" arrow>
+                                //         <DownloadIcon color="primary" />
+                                //     </Tooltip>
+                                // }
+                            >
+                                <BarGraph />
+                            </Widget>
                         )}
                     </>
                 </SideBar>
