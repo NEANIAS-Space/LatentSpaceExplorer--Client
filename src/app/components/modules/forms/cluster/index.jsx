@@ -12,7 +12,7 @@ import ScheduleIcon from '@material-ui/icons/Schedule';
 import Widget from 'app/components/modules/widget';
 import SimpleSelect from 'app/components/elements/selects/simple';
 import Slider from 'app/components/elements/slider';
-import LoadingButton from 'app/components/elements/loading-button';
+import LoadingButton from 'app/components/elements/buttons/loading';
 import { postCluster, getPendingClustersCount } from 'app/api/cluster';
 import sleep from 'app/utils/chronos';
 import humps from 'humps';
@@ -116,24 +116,22 @@ const ClusterForm = () => {
     };
 
     const fetchPendingCount = () => {
-        setMonitoringPendingCount(true);
-
         getPendingClustersCount(userId, experimentId)
-            .then((tasks) => {
+            .then((response) => {
                 setPreviousPendingCount(pendingCount);
-                setPendingCount(tasks.count);
+                setPendingCount(response.data.count);
 
-                if (tasks.count > 0) {
+                if (response.data.count > 0) {
                     // keep fetching
-                    sleep(10000).then(fetchPendingCount());
+                    sleep(10000).then(() => fetchPendingCount());
                 } else {
                     setMonitoringPendingCount(false);
                 }
             })
-            .catch((e) => {
+            .catch((error) => {
                 setMonitoringPendingCount(false);
                 setOpenMessageBox(true);
-                setErrorMessage(e.response.data.message);
+                setErrorMessage(error.response.data.message);
             });
     };
 
@@ -163,9 +161,9 @@ const ClusterForm = () => {
                         }
                     }),
                 )
-                .catch((e) => {
+                .catch((error) => {
                     setOpenMessageBox(true);
-                    setErrorMessage(e.response.data.message);
+                    setErrorMessage(error.response.data.message);
                     setSubmitLoading(false);
                 });
         }
@@ -178,15 +176,21 @@ const ClusterForm = () => {
         }
     }, [previousPendingCount, pendingCount, setUpdateClusters]);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(fetchPendingCount, []);
+    useEffect(
+        () => {
+            setMonitoringPendingCount(true);
+            fetchPendingCount();
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [],
+    );
 
     return (
         <Widget
             title="Cluster"
             icon={
                 <>
-                    <Tooltip title="Pending clusters">
+                    <Tooltip title="Pending clusters" arrow>
                         <Badge badgeContent={pendingCount} color="secondary">
                             <ScheduleIcon
                                 color={
