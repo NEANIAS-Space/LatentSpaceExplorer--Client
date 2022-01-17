@@ -1,20 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/client';
-import DefaultLayout from 'app/components/layouts/default-layout';
-import PrimaryContent from 'app/components/modules/primary-content';
 import Typography from '@material-ui/core/Typography';
 import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
+import TableBody from '@material-ui/core/TableBody';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import DeleteIcon from '@material-ui/icons/Delete';
-import VisibilityIcon from '@material-ui/icons/Visibility';
 import Link from '@material-ui/core/Link';
-import { getExperiments, deleteExperiment } from 'app/api/experiment';
+import DeleteIcon from '@material-ui/icons/Delete';
+import { red, grey } from '@material-ui/core/colors';
+import DefaultLayout from 'app/components/layouts/default-layout';
+import PrimaryContent from 'app/components/modules/primary-content';
 import MessageBox from 'app/components/elements/message-box';
+import ConfirmButton from 'app/components/elements/buttons/confim';
+import { getExperiments, deleteExperiment } from 'app/api/experiment';
+import theme from 'styles/theme';
 
 const ExperimentTemplate = () => {
     const [session] = useSession();
@@ -45,28 +47,39 @@ const ExperimentTemplate = () => {
 
     const fetchExperiments = () => {
         getExperiments(userId)
-            .then((results) => {
-                setExperiments(results);
+            .then((response) => {
+                setExperiments(response.data);
             })
-            .catch((e) => {
+            .catch((error) => {
                 setOpenMessageBox(true);
-                setErrorMessage(e.response.data.message);
+                setErrorMessage(error.response.data.message);
             });
     };
 
     const handleDeleteExperiment = (experimentId) => {
         deleteExperiment(userId, experimentId)
-            .then(fetchExperiments)
-            .catch((e) => {
+            .then(() => {
+                const options = experiments.filter(
+                    (experiment) => experiment.id !== experimentId,
+                );
+                setExperiments(options);
+            })
+            .catch((error) => {
                 setOpenMessageBox(true);
-                setErrorMessage(e.response.data.message);
+                setErrorMessage(error.response.data.message);
             });
     };
 
     const renderTableRow = () =>
         experiments.map((experiment) => (
             <TableRow key={experiment.id}>
-                <TableCell align="center">{experiment.metadata.name}</TableCell>
+                <TableCell>
+                    <Link
+                        href={`/projector/${encodeURIComponent(experiment.id)}`}
+                    >
+                        {experiment.metadata.name}
+                    </Link>
+                </TableCell>
                 <TableCell align="center">
                     {experiment.metadata.image.dim} x{' '}
                     {experiment.metadata.image.dim}
@@ -84,16 +97,20 @@ const ExperimentTemplate = () => {
                     {experiment.metadata.architecture.latent_dim}
                 </TableCell>
                 <TableCell align="center">
-                    <Link onClick={() => handleDeleteExperiment(experiment.id)}>
-                        <DeleteIcon />
-                    </Link>
-                </TableCell>
-                <TableCell align="center">
-                    <Link
-                        href={`/projector/${encodeURIComponent(experiment.id)}`}
-                    >
-                        <VisibilityIcon />
-                    </Link>
+                    <ConfirmButton
+                        texts={{
+                            default: 'Delete',
+                            confirm: 'Click to confirm',
+                            post: 'Deleting...',
+                        }}
+                        colors={{
+                            default: theme.palette.secondary.main,
+                            confirm: red[600],
+                            post: grey[50],
+                        }}
+                        icon={<DeleteIcon color="primary" />}
+                        onConfirm={() => handleDeleteExperiment(experiment.id)}
+                    />
                 </TableCell>
             </TableRow>
         ));
@@ -108,8 +125,11 @@ const ExperimentTemplate = () => {
                         Experiments list
                     </Typography>
                     <br />
-                    <TableContainer component={Paper}>
-                        <Table aria-label="table">
+                    <TableContainer
+                        component={Paper}
+                        style={{ maxHeight: '70vh' }}
+                    >
+                        <Table stickyHeader aria-label="table">
                             <TableHead>
                                 <TableRow>
                                     <TableCell align="center">Name</TableCell>
@@ -129,7 +149,6 @@ const ExperimentTemplate = () => {
                                         Latent dim.
                                     </TableCell>
                                     <TableCell align="center">Delete</TableCell>
-                                    <TableCell align="center">Show</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -137,6 +156,10 @@ const ExperimentTemplate = () => {
                             </TableBody>
                         </Table>
                     </TableContainer>
+                    <br />
+                    <Typography variant="caption" align="center">
+                        {experiments.length} experiments
+                    </Typography>
                     {renderMessageBox()}
                 </>
             </PrimaryContent>
