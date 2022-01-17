@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import MenuItem from '@material-ui/core/MenuItem';
 import { Select as MUISelect } from '@material-ui/core';
-import { normalize } from 'app/utils/formatter';
+import normalize from 'app/utils/strings';
 
 const SimpleSelect = ({ name, options, value, setValue, onChange }) => {
     const renderOptions = () =>
