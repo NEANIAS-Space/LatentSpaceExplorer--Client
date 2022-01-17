@@ -12,6 +12,7 @@ const getPendingClustersCount = async (userId, experimentId) => {
     const result = await api(userId).get(
         `/experiments/${experimentId}/clusters/pending`,
     );
+
     return result;
 };
 
@@ -37,4 +38,18 @@ const postCluster = async (userId, experimentId, algorithm, params) => {
     return task;
 };
 
-export { getClusters, getPendingClustersCount, getCluster, postCluster };
+const deleteCluster = async (userId, experimentId, clusterId) => {
+    const result = await api(userId).delete(
+        `/experiments/${experimentId}/clusters/${clusterId}`,
+    );
+
+    return result;
+};
+
+export {
+    getClusters,
+    getPendingClustersCount,
+    getCluster,
+    postCluster,
+    deleteCluster,
+};
