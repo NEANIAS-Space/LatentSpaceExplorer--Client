@@ -6,8 +6,8 @@ const DynamicGraph = dynamic(import('react-plotly.js'), {
     ssr: false,
 });
 
-const Graph = () => {
-    const { graphData } = useContext(ProjectorContext);
+const ScatterGraph = () => {
+    const { scatterGraphData } = useContext(ProjectorContext);
     const { setPreviewImage } = useContext(ProjectorContext);
 
     const [layout, setLayout] = useState({
@@ -23,7 +23,7 @@ const Graph = () => {
 
     return (
         <DynamicGraph
-            data={graphData}
+            data={scatterGraphData}
             layout={layout}
             frames={frames}
             config={config}
@@ -39,4 +39,4 @@ const Graph = () => {
     );
 };
 
-export default Graph;
+export default ScatterGraph;
