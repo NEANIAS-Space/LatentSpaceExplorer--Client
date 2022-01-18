@@ -42,7 +42,9 @@ const ScatterGraphManager = (components, points, ids, traces) => {
             }),
             text: [...graphData[symbolId].text, ids[i]],
             // noisy points
-            ...(traces[i] === -1 && { marker: { color: 'rgb(0, 0, 0)' } }),
+            ...(traces[i] === -1 && {
+                marker: { color: 'rgba(0, 0, 0, 0.75)' },
+            }),
         };
     }
 
