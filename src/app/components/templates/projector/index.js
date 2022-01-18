@@ -9,9 +9,9 @@ import VisualizationForm from 'app/components/modules/forms/visualization';
 import ReductionForm from 'app/components/modules/forms/reduction';
 import ClusterForm from 'app/components/modules/forms/cluster';
 import MessageBox from 'app/components/elements/message-box';
-import ScatterGraph from 'app/components/elements/graphs/scatter';
-import SilhouetteGraph from 'app/components/elements/graphs/silhouette';
-import BarGraph from 'app/components/elements/graphs/bar';
+import { ScatterGraph } from 'app/components/elements/graphs/scatter';
+import { SilhouetteGraph } from 'app/components/elements/graphs/silhouette';
+import { BarGraph } from 'app/components/elements/graphs/bar';
 import PreviewImage from 'app/components/elements/preview-image';
 import Widget from 'app/components/modules/widget';
 

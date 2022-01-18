@@ -13,11 +13,9 @@ import ProjectorContext from 'app/contexts/projector';
 import Widget from 'app/components/modules/widget';
 import SimpleSelect from 'app/components/elements/selects/simple';
 import AdvancedSelect from 'app/components/elements/selects/advanced';
-import {
-    BarGraphManager,
-    ScatterGraphManager,
-    SilohouetteGraphManager,
-} from 'app/utils/graphs';
+import { ScatterGraphManager } from 'app/components/elements/graphs/scatter';
+import { SilohouetteGraphManager } from 'app/components/elements/graphs/silhouette';
+import { BarGraphManager } from 'app/components/elements/graphs/bar';
 
 const VisualizationForm = () => {
     const [session] = useSession();
