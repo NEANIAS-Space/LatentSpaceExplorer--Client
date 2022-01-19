@@ -1,8 +1,8 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import ProjectorContext from 'app/contexts/projector';
 import theme from 'styles/theme';
-import { range } from 'app/utils/maths';
+import { range, average } from 'app/utils/maths';
 
 const SilohouetteGraphManager = (silhouettes, traces) => {
     const symbols = [...new Set(traces)];
@@ -50,59 +50,68 @@ const DynamicGraph = dynamic(import('react-plotly.js'), {
     ssr: false,
 });
 
+const computeAverageLine = (silhouetteGraphData) => {
+    let x = [];
+    let y = [];
+
+    silhouetteGraphData.forEach((trace) => {
+        x = x.concat(trace.x);
+        y = x.concat(trace.y);
+    });
+
+    const avg = average(x);
+    const max = Math.max(...y);
+
+    return { avg, max };
+};
+
 const SilhouetteGraph = () => {
     const { silhouetteGraphData } = useContext(ProjectorContext);
 
-    // const computeAverageLine = () => {
-    //     let x = [];
-    //     let y = [];
-
-    //     silhouetteGraphData.forEach((trace) => {
-    //         x = x.concat(trace.x);
-    //         y = x.concat(trace.y);
-    //     });
-
-    //     const avg = average(x);
-    //     const max = Math.max(...y);
-
-    //     return { avg, max };
-    // };
-
-    // const averageLine = computeAverageLine();
-
-    const [layout, setLayout] = useState({
-        showlegend: false,
-        hovermode: 'closest',
-        margin: {
-            l: theme.spacing(0),
-            r: theme.spacing(0),
-            b: theme.spacing(2),
-            t: theme.spacing(0),
-        },
-        yaxis: {
-            visible: false,
-        },
-        // shapes: [
-        //     {
-        //         type: 'line',
-        //         xref: 'x',
-        //         yref: 'y',
-        //         x0: averageLine.avg,
-        //         y0: 0,
-        //         x1: averageLine.avg,
-        //         y1: averageLine.max,
-        //         line: {
-        //             color: 'red',
-        //             width: 2,
-        //             dash: 'dot',
-        //         },
-        //     },
-        // ],
-    });
-
+    const [layout, setLayout] = useState();
     const [config, setConfig] = useState({
         displayModeBar: false,
     });
+
+    useEffect(() => {
+        const averageLine = computeAverageLine(silhouetteGraphData);
+
+        setLayout({
+            showlegend: false,
+            hovermode: 'closest',
+            margin: {
+                l: theme.spacing(0),
+                r: theme.spacing(0),
+                b: theme.spacing(2),
+                t: theme.spacing(0),
+            },
+            yaxis: {
+                visible: false,
+            },
+            xaxis: {
+                showspikes: true,
+                spikemode: 'across',
+                spikethickness: 2,
+                spikedash: 'dot',
+            },
+            shapes: [
+                {
+                    type: 'line',
+                    xref: 'x',
+                    yref: 'y',
+                    x0: averageLine.avg,
+                    y0: 0,
+                    x1: averageLine.avg,
+                    y1: averageLine.max,
+                    line: {
+                        color: 'red',
+                        width: 2,
+                        dash: 'dot',
+                    },
+                },
+            ],
+        });
+    }, [silhouetteGraphData]);
 
     return (
         <DynamicGraph
