@@ -5,7 +5,9 @@ import theme from 'styles/theme';
 import { range, average } from 'app/utils/maths';
 
 const SilohouetteGraphManager = (silhouettes, traces) => {
-    const symbols = [...new Set(traces)];
+    let symbols = [...new Set(traces)];
+    // filter noisy points
+    symbols = symbols.filter((symbol) => symbol !== -1);
 
     const symbolsMap = new Map();
     symbols.forEach((symbol, index) => {
@@ -25,14 +27,14 @@ const SilohouetteGraphManager = (silhouettes, traces) => {
     const graphData = Array.from(symbols).fill(trace);
 
     for (let i = 0; i < silhouettes.length; i += 1) {
-        const symbolId = symbolsMap.get(traces[i]);
+        if (traces[i] !== -1) {
+            const symbolId = symbolsMap.get(traces[i]);
 
-        graphData[symbolId] = {
-            ...graphData[symbolId],
-            x: [...graphData[symbolId].x, silhouettes[i]],
-            // noisy points
-            ...(traces[i] === -1 && { marker: { color: 'rgb(0, 0, 0)' } }),
-        };
+            graphData[symbolId] = {
+                ...graphData[symbolId],
+                x: [...graphData[symbolId].x, silhouettes[i]],
+            };
+        }
     }
 
     let start = 0;
