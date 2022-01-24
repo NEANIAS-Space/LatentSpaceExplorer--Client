@@ -289,7 +289,7 @@ const ReductionForm = () => {
                             margin="dense"
                             fullWidth
                         >
-                            <InputLabel id="init">init</InputLabel>
+                            <InputLabel id="init">Init</InputLabel>
                             <SimpleSelect
                                 name="init"
                                 options={initOptions}
