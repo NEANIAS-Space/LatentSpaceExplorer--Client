@@ -161,19 +161,43 @@ const VisualizationForm = () => {
                     const { groups: traces } = clusterResponse.data;
                     const { silhouettes } = clusterResponse.data;
 
-                    const scatterGraphData = ScatterGraphManager(
-                        components,
-                        points,
-                        ids,
-                        traces,
-                    );
+                    let scatterGraphData;
+                    try {
+                        scatterGraphData = ScatterGraphManager(
+                            components,
+                            points,
+                            ids,
+                            traces,
+                        );
+                    } catch (error) {
+                        setOpenMessageBox(true);
+                        setErrorMessage(
+                            'An error occurred while generating the scatter plot graph',
+                        );
+                    }
 
-                    const silhouetteGraphData = SilohouetteGraphManager(
-                        silhouettes,
-                        traces,
-                    );
+                    let silhouetteGraphData = [];
+                    try {
+                        silhouetteGraphData = SilohouetteGraphManager(
+                            silhouettes,
+                            traces,
+                        );
+                    } catch (error) {
+                        setOpenMessageBox(true);
+                        setErrorMessage(
+                            'An error occurred while generating the silhouette graph',
+                        );
+                    }
 
-                    const barGraphData = BarGraphManager(traces);
+                    let barGraphData;
+                    try {
+                        barGraphData = BarGraphManager(traces);
+                    } catch (error) {
+                        setOpenMessageBox(true);
+                        setErrorMessage(
+                            'An error occurred while generating the bar graph',
+                        );
+                    }
 
                     setScatterGraphData(scatterGraphData);
                     setSilhouetteGraphData(silhouetteGraphData);
@@ -190,12 +214,20 @@ const VisualizationForm = () => {
                     const { components } = response.data.metadata;
                     const traces = labels.data[labelId];
 
-                    const scatterGraphData = ScatterGraphManager(
-                        components,
-                        points,
-                        ids,
-                        traces,
-                    );
+                    let scatterGraphData;
+                    try {
+                        scatterGraphData = ScatterGraphManager(
+                            components,
+                            points,
+                            ids,
+                            traces,
+                        );
+                    } catch (error) {
+                        setOpenMessageBox(true);
+                        setErrorMessage(
+                            'An error occurred while generating the scatter plot graph',
+                        );
+                    }
 
                     setScatterGraphData(scatterGraphData);
                 })
@@ -210,12 +242,20 @@ const VisualizationForm = () => {
                     const { components } = response.data.metadata;
                     const traces = Array.from(points).fill(0);
 
-                    const scatterGraphData = ScatterGraphManager(
-                        components,
-                        points,
-                        ids,
-                        traces,
-                    );
+                    let scatterGraphData;
+                    try {
+                        scatterGraphData = ScatterGraphManager(
+                            components,
+                            points,
+                            ids,
+                            traces,
+                        );
+                    } catch (error) {
+                        setOpenMessageBox(true);
+                        setErrorMessage(
+                            'An error occurred while generating the scatter plot graph',
+                        );
+                    }
 
                     setScatterGraphData(scatterGraphData);
                 })
