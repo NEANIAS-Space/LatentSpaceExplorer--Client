@@ -223,7 +223,7 @@ const ClusterForm = () => {
                                 value={formState.dbscan.eps}
                                 step={0.01}
                                 min={0.01}
-                                max={0.99}
+                                max={10}
                                 setValue={handleAlgorithmParams}
                             />
                         </FormControl>
