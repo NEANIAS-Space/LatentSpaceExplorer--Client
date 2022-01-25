@@ -34,6 +34,13 @@ const api = (userId) => {
                         };
                         break;
 
+                    case 504:
+                        // eslint-disable-next-line no-param-reassign
+                        error.response.data = {
+                            message: 'Request has expired',
+                        };
+                        break;
+
                     default:
                         break;
                 }
