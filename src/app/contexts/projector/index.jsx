@@ -15,6 +15,8 @@ const ProjectorContext = createContext({
     setSilhouetteGraphData: () => {},
     barGraphData: [],
     setBarGraphData: () => {},
+    clustersScores: {},
+    setClustersScores: () => {},
     previewImage: '',
     setPreviewImage: () => {},
 });

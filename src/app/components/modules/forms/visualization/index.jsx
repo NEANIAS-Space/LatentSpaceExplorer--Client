@@ -31,6 +31,7 @@ const VisualizationForm = () => {
     const { setScatterGraphData } = useContext(ProjectorContext);
     const { setSilhouetteGraphData } = useContext(ProjectorContext);
     const { setBarGraphData } = useContext(ProjectorContext);
+    const { setClustersScores } = useContext(ProjectorContext);
 
     const [reductionId, setReductionId] = useState('');
     const [reductions, setReductions] = useState([]);
@@ -159,7 +160,7 @@ const VisualizationForm = () => {
                     const { ids, points } = reductionResponse.data;
                     const { components } = reductionResponse.data.metadata;
                     const { groups: traces } = clusterResponse.data;
-                    const { silhouettes } = clusterResponse.data;
+                    const { silhouettes, scores } = clusterResponse.data;
 
                     let scatterGraphData;
                     try {
@@ -202,6 +203,7 @@ const VisualizationForm = () => {
                     setScatterGraphData(scatterGraphData);
                     setSilhouetteGraphData(silhouetteGraphData);
                     setBarGraphData(barGraphData);
+                    setClustersScores(scores);
                 })
                 .catch((error) => {
                     setOpenMessageBox(true);
@@ -274,6 +276,7 @@ const VisualizationForm = () => {
         setClusterId('');
         setSilhouetteGraphData([]);
         setBarGraphData([]);
+        setClustersScores({});
     };
 
     const handleDeleteReduction = (id) => {

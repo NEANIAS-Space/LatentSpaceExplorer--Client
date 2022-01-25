@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import Tooltip from '@material-ui/core/Tooltip';
-import DownloadIcon from '@material-ui/icons/GetApp';
+import Grid from '@material-ui/core/Grid';
+import Box from '@material-ui/core/Box';
 import ProjectorLayout from 'app/components/layouts/projector-layout';
 import ProjectorContext from 'app/contexts/projector';
 import SideBar from 'app/components/modules/sidebar';
@@ -25,6 +25,7 @@ const ProjectorTemplate = () => {
     const [scatterGraphData, setScatterGraphData] = useState([]);
     const [silhouetteGraphData, setSilhouetteGraphData] = useState([]);
     const [barGraphData, setBarGraphData] = useState([]);
+    const [clustersScores, setClustersScores] = useState([]);
 
     const [previewImage, setPreviewImage] = useState('');
 
@@ -63,6 +64,8 @@ const ProjectorTemplate = () => {
                     setSilhouetteGraphData,
                     barGraphData,
                     setBarGraphData,
+                    clustersScores,
+                    setClustersScores,
                     previewImage,
                     setPreviewImage,
                 }}
@@ -87,15 +90,38 @@ const ProjectorTemplate = () => {
                                 <SilhouetteGraph />
                             </Widget>
                         )}
+                        {Object.keys(clustersScores).length > 0 && (
+                            <Widget title="Clusters scores">
+                                <>
+                                    <Grid container>
+                                        <Grid item xs={8}>
+                                            Calinski Harabasz:
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                            <Box textAlign="right">
+                                                {clustersScores.calinski_harabasz_score.toFixed(
+                                                    2,
+                                                )}
+                                            </Box>
+                                        </Grid>
+                                    </Grid>
+                                    <Grid container>
+                                        <Grid item xs={8}>
+                                            Davies Bouldin:
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                            <Box textAlign="right">
+                                                {clustersScores.davies_bouldin_score.toFixed(
+                                                    2,
+                                                )}
+                                            </Box>
+                                        </Grid>
+                                    </Grid>
+                                </>
+                            </Widget>
+                        )}
                         {barGraphData.length > 0 && (
-                            <Widget
-                                title="Clusters"
-                                // icon={
-                                //     <Tooltip title="Download clusters" arrow>
-                                //         <DownloadIcon color="primary" />
-                                //     </Tooltip>
-                                // }
-                            >
+                            <Widget title="Elements per clusters">
                                 <BarGraph />
                             </Widget>
                         )}
