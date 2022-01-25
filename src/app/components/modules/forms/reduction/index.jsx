@@ -53,6 +53,9 @@ const ReductionForm = () => {
             metric: 'euclidean',
             densmap: false,
         },
+        spectralEmbedding: {
+            affinity: 'nearest_neighbors',
+        },
         isomap: {
             neighbors: 15,
             metric: 'euclidean',
@@ -82,11 +85,21 @@ const ReductionForm = () => {
     const metricOptions = [
         { id: 'euclidean', value: 'euclidean' },
         { id: 'cosine', value: 'cosine' },
+        { id: 'minkowski', value: 'minkowski' },
+        { id: 'manhattan', value: 'manhattan' },
+        { id: 'chebyshev', value: 'chebyshev' },
+        { id: 'canberra', value: 'canberra' },
+        { id: 'mahalanobis', value: 'mahalanobis' },
     ];
 
-    const initOptions = [
+    const initParamsOptions = [
         { id: 'random', value: 'random' },
         { id: 'pca', value: 'pca' },
+    ];
+
+    const affinityOptions = [
+        { id: 'nearest_neighbors', value: 'nearest neighbors' },
+        { id: 'rbf', value: 'rbf' },
     ];
 
     const handleCommonParams = (event) => {
@@ -292,7 +305,7 @@ const ReductionForm = () => {
                             <InputLabel id="init">Init</InputLabel>
                             <SimpleSelect
                                 name="init"
-                                options={initOptions}
+                                options={initParamsOptions}
                                 value={formState.tsne.init}
                                 setValue={handleAlgorithmParams}
                             />
@@ -309,7 +322,7 @@ const ReductionForm = () => {
                                 name="neighbors"
                                 value={formState.umap.neighbors}
                                 step={1}
-                                min={2}
+                                min={1}
                                 max={200}
                                 setValue={handleAlgorithmParams}
                             />
@@ -352,6 +365,27 @@ const ReductionForm = () => {
                                 onChange={handleAlgorithmParams}
                                 color="primary"
                             />
+                        </FormControl>
+                    </>
+                )}
+
+                {/* Spectral Embedding */}
+                {formState.algorithm === 'spectralEmbedding' && (
+                    <>
+                        <FormControl margin="dense" fullWidth>
+                            <FormControl
+                                variant="outlined"
+                                margin="dense"
+                                fullWidth
+                            >
+                                <InputLabel id="affinity">Affinity</InputLabel>
+                                <SimpleSelect
+                                    name="affinity"
+                                    options={affinityOptions}
+                                    value={formState.spectralEmbedding.affinity}
+                                    setValue={handleAlgorithmParams}
+                                />
+                            </FormControl>
                         </FormControl>
                     </>
                 )}
