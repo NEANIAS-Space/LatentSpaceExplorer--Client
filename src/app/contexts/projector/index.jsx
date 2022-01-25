@@ -9,8 +9,16 @@ const ProjectorContext = createContext({
     setUpdateReductions: () => {},
     updateClusters: true,
     setUpdateClusters: () => {},
-    graphData: [],
-    setGraphData: () => {},
+    scatterGraphData: [],
+    setScatterGraphData: () => {},
+    silhouetteGraphData: [],
+    setSilhouetteGraphData: () => {},
+    barGraphData: [],
+    setBarGraphData: () => {},
+    clustersScores: {},
+    setClustersScores: () => {},
+    previewImage: '',
+    setPreviewImage: () => {},
 });
 
 export default ProjectorContext;

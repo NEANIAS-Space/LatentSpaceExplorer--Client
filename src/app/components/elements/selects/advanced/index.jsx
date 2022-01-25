@@ -1,12 +1,24 @@
 import PropTypes from 'prop-types';
-import MenuItem from '@material-ui/core/MenuItem';
 import ListItem from '@material-ui/core/ListItem';
+import DeleteIcon from '@material-ui/icons/Delete';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { Select as MUISelect } from '@material-ui/core';
-import { normalize } from 'app/utils/formatter';
+import { red, grey } from '@material-ui/core/colors';
+import normalize from 'app/utils/strings';
+import ConfirmButton from 'app/components/elements/buttons/confim';
+import theme from 'styles/theme';
 
-const AdvancedSelect = ({ name, options, value, setValue, onChange }) => {
+const AdvancedSelect = ({
+    name,
+    options,
+    value,
+    setValue,
+    onChange,
+    secondaryAction,
+    onSecondaryAction,
+}) => {
     const renderParams = (params) => {
         const stringParams = Object.keys(params)
             .map((key) => `${normalize(key)}=${params[key]}`)
@@ -25,7 +37,7 @@ const AdvancedSelect = ({ name, options, value, setValue, onChange }) => {
     };
 
     const renderItem = (option) => (
-        <ListItem component="div" disableGutters dense>
+        <ListItem key={option.id} value={option.id} button dense>
             <ListItemText
                 primary={
                     <>
@@ -66,15 +78,30 @@ const AdvancedSelect = ({ name, options, value, setValue, onChange }) => {
                 }
                 secondaryTypographyProps={{ component: 'div' }}
             />
+            {secondaryAction && option.id !== value && (
+                <ListItemSecondaryAction>
+                    <ConfirmButton
+                        texts={{
+                            default: 'Delete',
+                            confirm: 'Click to confirm',
+                            post: 'Deleting...',
+                        }}
+                        colors={{
+                            default: theme.palette.secondary.main,
+                            confirm: red[600],
+                            post: grey[50],
+                        }}
+                        icon={<DeleteIcon color="primary" />}
+                        onConfirm={() => {
+                            onSecondaryAction(option.id);
+                        }}
+                    />
+                </ListItemSecondaryAction>
+            )}
         </ListItem>
     );
 
-    const renderOptions = () =>
-        options.map((option) => (
-            <MenuItem key={option.id} value={option.id} dense>
-                {renderItem(option)}
-            </MenuItem>
-        ));
+    const renderOptions = () => options.map((option) => renderItem(option));
 
     const handleChange = (event) => {
         setValue(event);
@@ -107,11 +134,15 @@ AdvancedSelect.propTypes = {
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     setValue: PropTypes.func.isRequired,
     onChange: PropTypes.func,
+    secondaryAction: PropTypes.bool,
+    onSecondaryAction: PropTypes.func,
 };
 
 AdvancedSelect.defaultProps = {
     options: [],
     onChange: () => {},
+    secondaryAction: false,
+    onSecondaryAction: () => {},
 };
 
 export default AdvancedSelect;

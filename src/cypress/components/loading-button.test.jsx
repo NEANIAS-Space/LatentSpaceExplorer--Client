@@ -1,7 +1,7 @@
-// src/app/components/modules/elements/loading-button/index.jsx
+// src/app/components/modules/elements/buttons/loading/index.jsx
 
 import { mount } from '@cypress/react';
-import LoadingButton from 'app/components/elements/loading-button';
+import LoadingButton from 'app/components/elements/buttons/loading';
 
 describe('LoadingButton', () => {
     const name = 'LoadingButtonTest';

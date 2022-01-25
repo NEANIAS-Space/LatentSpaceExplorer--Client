@@ -20,7 +20,7 @@ const HomeTemplate = () => (
                     </Link>
                 </Typography>
                 <br />
-                <Link href="/experiments">
+                <Link href="/experiments" color="primary" underline="none">
                     <Button
                         component="button"
                         variant="contained"

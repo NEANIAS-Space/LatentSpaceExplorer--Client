@@ -24,12 +24,12 @@ const PreviewImage = ({ imageName }) => {
         setImageUrl('');
 
         getImage(userId, experimentId, imageName)
-            .then((url) => {
-                setImageUrl(url);
+            .then((response) => {
+                setImageUrl(response.data);
             })
-            .catch((e) => {
+            .catch((error) => {
                 setOpenMessageBox(true);
-                setErrorMessage(e.response.data.detail);
+                setErrorMessage(error.response.data.message);
             });
     };
 

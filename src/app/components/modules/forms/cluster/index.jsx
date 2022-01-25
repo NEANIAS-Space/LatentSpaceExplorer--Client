@@ -12,7 +12,7 @@ import ScheduleIcon from '@material-ui/icons/Schedule';
 import Widget from 'app/components/modules/widget';
 import SimpleSelect from 'app/components/elements/selects/simple';
 import Slider from 'app/components/elements/slider';
-import LoadingButton from 'app/components/elements/loading-button';
+import LoadingButton from 'app/components/elements/buttons/loading';
 import { postCluster, getPendingClustersCount } from 'app/api/cluster';
 import sleep from 'app/utils/chronos';
 import humps from 'humps';
@@ -41,25 +41,34 @@ const ClusterForm = () => {
         dbscan: {
             eps: 0.5,
             minSamples: 5,
+            metric: 'euclidean',
         },
         kmeans: {
             nClusters: 8,
         },
         agglomerativeClustering: {
             distanceThreshold: 5,
+            affinity: 'euclidean',
+            linkage: 'ward',
         },
         spectralClustering: {
             nClusters: 8,
+            affinity: 'nearest_neighbors',
+            nNeighbors: 10,
         },
         optics: {
             minSamples: 5,
             metric: 'euclidean',
+            clusterMethod: 'xi',
+            min_cluster_size: 0,
         },
         gaussianMixture: {
             nComponents: 2,
+            initParams: 'kmeans',
         },
         birch: {
             nClusters: 3,
+            threshold: 0.5,
         },
     };
 
@@ -85,6 +94,39 @@ const ClusterForm = () => {
     const metricOptions = [
         { id: 'euclidean', value: 'euclidean' },
         { id: 'cosine', value: 'cosine' },
+        { id: 'minkowski', value: 'minkowski' },
+        { id: 'manhattan', value: 'manhattan' },
+        { id: 'chebyshev', value: 'chebyshev' },
+        { id: 'canberra', value: 'canberra' },
+        { id: 'mahalanobis', value: 'mahalanobis' },
+    ];
+
+    const AGAffinintyOptions = [
+        { id: 'euclidean', value: 'euclidean' },
+        { id: 'cosine', value: 'cosine' },
+        { id: 'manhattam', value: 'manhattam' },
+    ];
+
+    const SCAffinintyOptions = [
+        { id: 'nearest_neighbors', value: 'nearest_neighbors' },
+        { id: 'rbf', value: 'rbf' },
+    ];
+
+    const linkageOptions = [
+        { id: 'ward', value: 'ward' },
+        { id: 'complete', value: 'complete' },
+        { id: 'average', value: 'average' },
+        { id: 'single', value: 'single' },
+    ];
+
+    const clusterMethodOptions = [
+        { id: 'xi', value: 'xi' },
+        { id: 'dbscan', value: 'dbscan' },
+    ];
+
+    const initParamsOptions = [
+        { id: 'kmeans', value: 'kmeans' },
+        { id: 'random', value: 'random' },
     ];
 
     const handleCommonParams = (event) => {
@@ -116,24 +158,22 @@ const ClusterForm = () => {
     };
 
     const fetchPendingCount = () => {
-        setMonitoringPendingCount(true);
-
         getPendingClustersCount(userId, experimentId)
-            .then((tasks) => {
+            .then((response) => {
                 setPreviousPendingCount(pendingCount);
-                setPendingCount(tasks.count);
+                setPendingCount(response.data.count);
 
-                if (tasks.count > 0) {
+                if (response.data.count > 0) {
                     // keep fetching
-                    sleep(10000).then(fetchPendingCount());
+                    sleep(10000).then(() => fetchPendingCount());
                 } else {
                     setMonitoringPendingCount(false);
                 }
             })
-            .catch((e) => {
+            .catch((error) => {
                 setMonitoringPendingCount(false);
                 setOpenMessageBox(true);
-                setErrorMessage(e.response.data.message);
+                setErrorMessage(error.response.data.message);
             });
     };
 
@@ -163,9 +203,9 @@ const ClusterForm = () => {
                         }
                     }),
                 )
-                .catch((e) => {
+                .catch((error) => {
                     setOpenMessageBox(true);
-                    setErrorMessage(e.response.data.message);
+                    setErrorMessage(error.response.data.message);
                     setSubmitLoading(false);
                 });
         }
@@ -178,15 +218,21 @@ const ClusterForm = () => {
         }
     }, [previousPendingCount, pendingCount, setUpdateClusters]);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(fetchPendingCount, []);
+    useEffect(
+        () => {
+            setMonitoringPendingCount(true);
+            fetchPendingCount();
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [],
+    );
 
     return (
         <Widget
             title="Cluster"
             icon={
                 <>
-                    <Tooltip title="Pending clusters">
+                    <Tooltip title="Pending clusters" arrow>
                         <Badge badgeContent={pendingCount} color="secondary">
                             <ScheduleIcon
                                 color={
@@ -219,7 +265,7 @@ const ClusterForm = () => {
                                 value={formState.dbscan.eps}
                                 step={0.01}
                                 min={0.01}
-                                max={0.99}
+                                max={10}
                                 setValue={handleAlgorithmParams}
                             />
                         </FormControl>
@@ -233,6 +279,19 @@ const ClusterForm = () => {
                                 step={1}
                                 min={1}
                                 max={300}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                        <FormControl
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                        >
+                            <InputLabel id="metric">Metric</InputLabel>
+                            <SimpleSelect
+                                name="metric"
+                                options={metricOptions}
+                                value={formState.dbscan.metric}
                                 setValue={handleAlgorithmParams}
                             />
                         </FormControl>
@@ -277,6 +336,36 @@ const ClusterForm = () => {
                                 setValue={handleAlgorithmParams}
                             />
                         </FormControl>
+                        <FormControl
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                        >
+                            <InputLabel id="affinity">Affinity</InputLabel>
+                            <SimpleSelect
+                                name="affinity"
+                                options={AGAffinintyOptions}
+                                value={
+                                    formState.agglomerativeClustering.affinity
+                                }
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                        <FormControl
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                        >
+                            <InputLabel id="linkage">Linkage</InputLabel>
+                            <SimpleSelect
+                                name="linkage"
+                                options={linkageOptions}
+                                value={
+                                    formState.agglomerativeClustering.linkage
+                                }
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
                     </>
                 )}
 
@@ -292,6 +381,30 @@ const ClusterForm = () => {
                                 value={formState.spectralClustering.nClusters}
                                 step={1}
                                 min={2}
+                                max={100}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                        <FormControl
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                        >
+                            <InputLabel id="affinity">Affinity</InputLabel>
+                            <SimpleSelect
+                                name="affinity"
+                                options={SCAffinintyOptions}
+                                value={formState.spectralClustering.affinity}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                        <FormControl margin="dense" fullWidth>
+                            <Typography variant="caption">Neighbors</Typography>
+                            <Slider
+                                name="nNeighbors"
+                                value={formState.spectralClustering.nNeighbors}
+                                step={1}
+                                min={1}
                                 max={100}
                                 setValue={handleAlgorithmParams}
                             />
@@ -328,6 +441,34 @@ const ClusterForm = () => {
                                 setValue={handleAlgorithmParams}
                             />
                         </FormControl>
+                        <FormControl
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                        >
+                            <InputLabel id="clusterMethod">
+                                Cluster Method
+                            </InputLabel>
+                            <SimpleSelect
+                                name="clusterMethod"
+                                options={clusterMethodOptions}
+                                value={formState.optics.clusterMethod}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                        <FormControl margin="dense" fullWidth>
+                            <Typography variant="caption">
+                                Min. Cluster Size
+                            </Typography>
+                            <Slider
+                                name="minSamples"
+                                value={formState.optics.minSamples}
+                                step={0.01}
+                                min={0}
+                                max={0.99}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
                     </>
                 )}
 
@@ -347,6 +488,19 @@ const ClusterForm = () => {
                                 setValue={handleAlgorithmParams}
                             />
                         </FormControl>
+                        <FormControl
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                        >
+                            <InputLabel id="initParams">Init Params</InputLabel>
+                            <SimpleSelect
+                                name="initParams"
+                                options={initParamsOptions}
+                                value={formState.gaussianMixture.initParams}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
                     </>
                 )}
 
@@ -363,6 +517,17 @@ const ClusterForm = () => {
                                 step={1}
                                 min={2}
                                 max={100}
+                                setValue={handleAlgorithmParams}
+                            />
+                        </FormControl>
+                        <FormControl margin="dense" fullWidth>
+                            <Typography variant="caption">Threshold</Typography>
+                            <Slider
+                                name="threshold"
+                                value={formState.birch.threshold}
+                                step={0.1}
+                                min={0}
+                                max={1}
                                 setValue={handleAlgorithmParams}
                             />
                         </FormControl>

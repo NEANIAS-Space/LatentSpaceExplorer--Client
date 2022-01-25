@@ -13,7 +13,7 @@ import ScheduleIcon from '@material-ui/icons/Schedule';
 import Widget from 'app/components/modules/widget';
 import SimpleSelect from 'app/components/elements/selects/simple';
 import Slider from 'app/components/elements/slider';
-import LoadingButton from 'app/components/elements/loading-button';
+import LoadingButton from 'app/components/elements/buttons/loading';
 import { postReduction, getPendingReductionsCount } from 'app/api/reduction';
 import sleep from 'app/utils/chronos';
 import humps from 'humps';
@@ -53,6 +53,9 @@ const ReductionForm = () => {
             metric: 'euclidean',
             densmap: false,
         },
+        spectralEmbedding: {
+            affinity: 'nearest_neighbors',
+        },
         isomap: {
             neighbors: 15,
             metric: 'euclidean',
@@ -82,11 +85,21 @@ const ReductionForm = () => {
     const metricOptions = [
         { id: 'euclidean', value: 'euclidean' },
         { id: 'cosine', value: 'cosine' },
+        { id: 'minkowski', value: 'minkowski' },
+        { id: 'manhattan', value: 'manhattan' },
+        { id: 'chebyshev', value: 'chebyshev' },
+        { id: 'canberra', value: 'canberra' },
+        { id: 'mahalanobis', value: 'mahalanobis' },
     ];
 
-    const initOptions = [
+    const initParamsOptions = [
         { id: 'random', value: 'random' },
         { id: 'pca', value: 'pca' },
+    ];
+
+    const affinityOptions = [
+        { id: 'nearest_neighbors', value: 'nearest neighbors' },
+        { id: 'rbf', value: 'rbf' },
     ];
 
     const handleCommonParams = (event) => {
@@ -122,24 +135,22 @@ const ReductionForm = () => {
     };
 
     const fetchPendingCount = () => {
-        setMonitoringPendingCount(true);
-
         getPendingReductionsCount(userId, experimentId)
-            .then((tasks) => {
+            .then((response) => {
                 setPreviousPendingCount(pendingCount);
-                setPendingCount(tasks.count);
+                setPendingCount(response.data.count);
 
-                if (tasks.count > 0) {
+                if (response.data.count > 0) {
                     // keep fetching
-                    sleep(10000).then(fetchPendingCount());
+                    sleep(10000).then(() => fetchPendingCount());
                 } else {
                     setMonitoringPendingCount(false);
                 }
             })
-            .catch((e) => {
+            .catch((error) => {
                 setMonitoringPendingCount(false);
                 setOpenMessageBox(true);
-                setErrorMessage(e.response.data.message);
+                setErrorMessage(error.response.data.message);
             });
     };
 
@@ -170,9 +181,9 @@ const ReductionForm = () => {
                         }
                     }),
                 )
-                .catch((e) => {
+                .catch((error) => {
                     setOpenMessageBox(true);
-                    setErrorMessage(e.response.data.message);
+                    setErrorMessage(error.response.data.message);
                     setSubmitLoading(false);
                 });
         }
@@ -185,15 +196,21 @@ const ReductionForm = () => {
         }
     }, [previousPendingCount, pendingCount, setUpdateReductions]);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(fetchPendingCount, []);
+    useEffect(
+        () => {
+            setMonitoringPendingCount(true);
+            fetchPendingCount();
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [],
+    );
 
     return (
         <Widget
             title="Reduction"
             icon={
                 <>
-                    <Tooltip title="Pending reductions">
+                    <Tooltip title="Pending reductions" arrow>
                         <Badge badgeContent={pendingCount} color="secondary">
                             <ScheduleIcon
                                 color={
@@ -285,10 +302,10 @@ const ReductionForm = () => {
                             margin="dense"
                             fullWidth
                         >
-                            <InputLabel id="init">init</InputLabel>
+                            <InputLabel id="init">Init</InputLabel>
                             <SimpleSelect
                                 name="init"
-                                options={initOptions}
+                                options={initParamsOptions}
                                 value={formState.tsne.init}
                                 setValue={handleAlgorithmParams}
                             />
@@ -305,7 +322,7 @@ const ReductionForm = () => {
                                 name="neighbors"
                                 value={formState.umap.neighbors}
                                 step={1}
-                                min={2}
+                                min={1}
                                 max={200}
                                 setValue={handleAlgorithmParams}
                             />
@@ -348,6 +365,27 @@ const ReductionForm = () => {
                                 onChange={handleAlgorithmParams}
                                 color="primary"
                             />
+                        </FormControl>
+                    </>
+                )}
+
+                {/* Spectral Embedding */}
+                {formState.algorithm === 'spectralEmbedding' && (
+                    <>
+                        <FormControl margin="dense" fullWidth>
+                            <FormControl
+                                variant="outlined"
+                                margin="dense"
+                                fullWidth
+                            >
+                                <InputLabel id="affinity">Affinity</InputLabel>
+                                <SimpleSelect
+                                    name="affinity"
+                                    options={affinityOptions}
+                                    value={formState.spectralEmbedding.affinity}
+                                    setValue={handleAlgorithmParams}
+                                />
+                            </FormControl>
                         </FormControl>
                     </>
                 )}

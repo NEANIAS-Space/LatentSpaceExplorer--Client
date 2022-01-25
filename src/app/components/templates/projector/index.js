@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import Grid from '@material-ui/core/Grid';
+import Box from '@material-ui/core/Box';
 import ProjectorLayout from 'app/components/layouts/projector-layout';
 import ProjectorContext from 'app/contexts/projector';
 import SideBar from 'app/components/modules/sidebar';
@@ -7,8 +9,11 @@ import VisualizationForm from 'app/components/modules/forms/visualization';
 import ReductionForm from 'app/components/modules/forms/reduction';
 import ClusterForm from 'app/components/modules/forms/cluster';
 import MessageBox from 'app/components/elements/message-box';
-import Graph from 'app/components/elements/graph';
+import { ScatterGraph } from 'app/components/elements/graphs/scatter';
+import { SilhouetteGraph } from 'app/components/elements/graphs/silhouette';
+import { BarGraph } from 'app/components/elements/graphs/bar';
 import PreviewImage from 'app/components/elements/preview-image';
+import Widget from 'app/components/modules/widget';
 
 const ProjectorTemplate = () => {
     const [openMessageBox, setOpenMessageBox] = useState(false);
@@ -17,7 +22,10 @@ const ProjectorTemplate = () => {
     const [updateReductions, setUpdateReductions] = useState(false);
     const [updateClusters, setUpdateClusters] = useState(false);
 
-    const [graphData, setGraphData] = useState([]);
+    const [scatterGraphData, setScatterGraphData] = useState([]);
+    const [silhouetteGraphData, setSilhouetteGraphData] = useState([]);
+    const [barGraphData, setBarGraphData] = useState([]);
+    const [clustersScores, setClustersScores] = useState([]);
 
     const [previewImage, setPreviewImage] = useState('');
 
@@ -50,8 +58,14 @@ const ProjectorTemplate = () => {
                     setUpdateReductions,
                     updateClusters,
                     setUpdateClusters,
-                    graphData,
-                    setGraphData,
+                    scatterGraphData,
+                    setScatterGraphData,
+                    silhouetteGraphData,
+                    setSilhouetteGraphData,
+                    barGraphData,
+                    setBarGraphData,
+                    clustersScores,
+                    setClustersScores,
                     previewImage,
                     setPreviewImage,
                 }}
@@ -64,12 +78,52 @@ const ProjectorTemplate = () => {
                     </>
                 </SideBar>
                 <PrimaryContent>
-                    <Graph />
+                    <ScatterGraph />
                 </PrimaryContent>
                 <SideBar column={3}>
                     <>
                         {previewImage && (
                             <PreviewImage imageName={previewImage} />
+                        )}
+                        {silhouetteGraphData.length > 0 && (
+                            <Widget title="Silhouettes">
+                                <SilhouetteGraph />
+                            </Widget>
+                        )}
+                        {Object.keys(clustersScores).length > 0 && (
+                            <Widget title="Clusters scores">
+                                <>
+                                    <Grid container>
+                                        <Grid item xs={8}>
+                                            Calinski Harabasz:
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                            <Box textAlign="right">
+                                                {clustersScores.calinski_harabasz_score.toFixed(
+                                                    2,
+                                                )}
+                                            </Box>
+                                        </Grid>
+                                    </Grid>
+                                    <Grid container>
+                                        <Grid item xs={8}>
+                                            Davies Bouldin:
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                            <Box textAlign="right">
+                                                {clustersScores.davies_bouldin_score.toFixed(
+                                                    2,
+                                                )}
+                                            </Box>
+                                        </Grid>
+                                    </Grid>
+                                </>
+                            </Widget>
+                        )}
+                        {barGraphData.length > 0 && (
+                            <Widget title="Elements per clusters">
+                                <BarGraph />
+                            </Widget>
                         )}
                     </>
                 </SideBar>
