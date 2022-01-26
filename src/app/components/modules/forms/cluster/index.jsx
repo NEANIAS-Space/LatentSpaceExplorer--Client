@@ -60,7 +60,7 @@ const ClusterForm = () => {
             minSamples: 5,
             metric: 'euclidean',
             clusterMethod: 'xi',
-            min_cluster_size: 0,
+            minClusterSize: 0,
         },
         gaussianMixture: {
             nComponents: 2,
@@ -461,8 +461,8 @@ const ClusterForm = () => {
                                 Min. Cluster Size
                             </Typography>
                             <Slider
-                                name="minSamples"
-                                value={formState.optics.minSamples}
+                                name="minClusterSize"
+                                value={formState.optics.minClusterSize}
                                 step={0.01}
                                 min={0}
                                 max={0.99}
