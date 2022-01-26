@@ -3,6 +3,10 @@ import dynamic from 'next/dynamic';
 import ProjectorContext from 'app/contexts/projector';
 
 const ScatterGraphManager = (components, points, ids, traces) => {
+    if (!(points.length > 0 && ids.length > 0 && traces.length > 0)) {
+        return [];
+    }
+
     const is3D = components === 3;
 
     const symbols = [...new Set(traces)];

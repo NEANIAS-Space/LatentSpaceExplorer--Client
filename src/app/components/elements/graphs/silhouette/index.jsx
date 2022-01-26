@@ -5,6 +5,10 @@ import theme from 'styles/theme';
 import { range, average } from 'app/utils/maths';
 
 const SilohouetteGraphManager = (silhouettes, traces) => {
+    if (!(silhouettes.length > 0 && traces.length > 0)) {
+        return [];
+    }
+
     let symbols = [...new Set(traces)];
     // filter noisy points
     symbols = symbols.filter((symbol) => symbol !== -1);

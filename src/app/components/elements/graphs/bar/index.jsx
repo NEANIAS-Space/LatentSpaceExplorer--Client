@@ -5,6 +5,10 @@ import theme from 'styles/theme';
 import { occurrences } from 'app/utils/maths';
 
 const BarGraphManager = (traces) => {
+    if (!(traces.length > 0)) {
+        return [];
+    }
+
     const symbols = [...new Set(traces)];
 
     const symbolsMap = new Map();
