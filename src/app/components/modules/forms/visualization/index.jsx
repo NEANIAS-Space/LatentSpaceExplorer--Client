@@ -162,7 +162,7 @@ const VisualizationForm = () => {
                     const { groups: traces } = clusterResponse.data;
                     const { silhouettes, scores } = clusterResponse.data;
 
-                    let scatterGraphData;
+                    let scatterGraphData = [];
                     try {
                         scatterGraphData = ScatterGraphManager(
                             components,
@@ -190,7 +190,7 @@ const VisualizationForm = () => {
                         );
                     }
 
-                    let barGraphData;
+                    let barGraphData = [];
                     try {
                         barGraphData = BarGraphManager(traces);
                     } catch (error) {
