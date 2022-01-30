@@ -17,6 +17,8 @@ const ProjectorContext = createContext({
     setBarGraphData: () => {},
     clustersScores: {},
     setClustersScores: () => {},
+    wordCloudData: {},
+    setWordCloudData: () => {},
     previewImage: '',
     setPreviewImage: () => {},
 });

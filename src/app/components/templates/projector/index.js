@@ -13,7 +13,8 @@ import { ScatterGraph } from 'app/components/elements/graphs/scatter';
 import { SilhouetteGraph } from 'app/components/elements/graphs/silhouette';
 import { BarGraph } from 'app/components/elements/graphs/bar';
 import PreviewImage from 'app/components/elements/preview-image';
-import Widget from 'app/components/modules/widget';
+import Widget from 'app/components/elements/widget';
+import WordCloudWidget from 'app/components/modules/widgets/wordcloud';
 
 const ProjectorTemplate = () => {
     const [openMessageBox, setOpenMessageBox] = useState(false);
@@ -26,6 +27,7 @@ const ProjectorTemplate = () => {
     const [silhouetteGraphData, setSilhouetteGraphData] = useState([]);
     const [barGraphData, setBarGraphData] = useState([]);
     const [clustersScores, setClustersScores] = useState([]);
+    const [wordCloudData, setWordCloudData] = useState([]);
 
     const [previewImage, setPreviewImage] = useState('');
 
@@ -66,6 +68,8 @@ const ProjectorTemplate = () => {
                     setBarGraphData,
                     clustersScores,
                     setClustersScores,
+                    wordCloudData,
+                    setWordCloudData,
                     previewImage,
                     setPreviewImage,
                 }}
@@ -125,6 +129,7 @@ const ProjectorTemplate = () => {
                                 <BarGraph />
                             </Widget>
                         )}
+                        {wordCloudData.length > 0 && <WordCloudWidget />}
                     </>
                 </SideBar>
                 {renderMessageBox()}

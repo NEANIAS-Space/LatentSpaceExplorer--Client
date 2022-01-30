@@ -9,7 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import Badge from '@material-ui/core/Badge';
 import ScheduleIcon from '@material-ui/icons/Schedule';
-import Widget from 'app/components/modules/widget';
+import Widget from 'app/components/elements/widget';
 import SimpleSelect from 'app/components/elements/selects/simple';
 import Slider from 'app/components/elements/slider';
 import LoadingButton from 'app/components/elements/buttons/loading';

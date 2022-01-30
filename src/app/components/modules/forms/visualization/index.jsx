@@ -10,12 +10,13 @@ import { getClusters, getCluster, deleteCluster } from 'app/api/cluster';
 import { getLabels } from 'app/api/label';
 import { FormControl, InputLabel } from '@material-ui/core';
 import ProjectorContext from 'app/contexts/projector';
-import Widget from 'app/components/modules/widget';
+import Widget from 'app/components/elements/widget';
 import SimpleSelect from 'app/components/elements/selects/simple';
 import AdvancedSelect from 'app/components/elements/selects/advanced';
 import { ScatterGraphManager } from 'app/components/elements/graphs/scatter';
 import { SilohouetteGraphManager } from 'app/components/elements/graphs/silhouette';
 import { BarGraphManager } from 'app/components/elements/graphs/bar';
+import { WordCloudManager } from 'app/components/elements/graphs/wordcloud';
 
 const VisualizationForm = () => {
     const [session] = useSession();
@@ -32,6 +33,7 @@ const VisualizationForm = () => {
     const { setSilhouetteGraphData } = useContext(ProjectorContext);
     const { setBarGraphData } = useContext(ProjectorContext);
     const { setClustersScores } = useContext(ProjectorContext);
+    const { setWordCloudData } = useContext(ProjectorContext);
 
     const [reductionId, setReductionId] = useState('');
     const [reductions, setReductions] = useState([]);
@@ -200,10 +202,21 @@ const VisualizationForm = () => {
                         );
                     }
 
+                    let wordCloudData = [];
+                    try {
+                        wordCloudData = WordCloudManager(labels, traces);
+                    } catch (error) {
+                        setOpenMessageBox(true);
+                        setErrorMessage(
+                            'An error occurred while generating the word cloud graph',
+                        );
+                    }
+
                     setScatterGraphData(scatterGraphData);
                     setSilhouetteGraphData(silhouetteGraphData);
                     setBarGraphData(barGraphData);
                     setClustersScores(scores);
+                    setWordCloudData(wordCloudData);
                 })
                 .catch((error) => {
                     setOpenMessageBox(true);
