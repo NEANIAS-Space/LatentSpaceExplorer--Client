@@ -10,4 +10,11 @@ const average = (array) =>
 const occurrences = (array, value) =>
     array.reduce((a, v) => (v === value ? a + 1 : a), 0);
 
-export { range, average, occurrences };
+const indexOfAll = (array, value) =>
+    array.reduce(
+        (previous, element, i) =>
+            element === value ? [...previous, i] : previous,
+        [],
+    );
+
+export { range, average, occurrences, indexOfAll };
