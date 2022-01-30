@@ -340,6 +340,7 @@ const VisualizationForm = () => {
         setOpenMessageBox,
         setErrorMessage,
         setBarGraphData,
+        setClustersScores,
     ]);
 
     return (
