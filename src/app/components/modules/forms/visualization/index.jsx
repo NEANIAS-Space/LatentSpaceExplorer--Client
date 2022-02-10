@@ -13,10 +13,6 @@ import ProjectorContext from 'app/contexts/projector';
 import Widget from 'app/components/elements/widget';
 import SimpleSelect from 'app/components/elements/selects/simple';
 import AdvancedSelect from 'app/components/elements/selects/advanced';
-import { ScatterGraphManager } from 'app/components/elements/graphs/scatter';
-import { SilohouetteGraphManager } from 'app/components/elements/graphs/silhouette';
-import { BarGraphManager } from 'app/components/elements/graphs/bar';
-import { WordCloudManager } from 'app/components/elements/graphs/wordcloud';
 
 const VisualizationForm = () => {
     const [session] = useSession();
@@ -25,22 +21,25 @@ const VisualizationForm = () => {
     const { setOpenMessageBox } = useContext(ProjectorContext);
     const { setErrorMessage } = useContext(ProjectorContext);
 
-    const { updateReductions, setUpdateReductions } =
+    const { triggerFetchReductions, setTriggerFetchReductions } =
         useContext(ProjectorContext);
-    const { updateClusters, setUpdateClusters } = useContext(ProjectorContext);
+    const { triggerFetchClusters, setTriggerFetchClusters } =
+        useContext(ProjectorContext);
 
-    const { setScatterGraphData } = useContext(ProjectorContext);
-    const { setSilhouetteGraphData } = useContext(ProjectorContext);
-    const { setBarGraphData } = useContext(ProjectorContext);
-    const { setClustersScores } = useContext(ProjectorContext);
-    const { setWordCloudData } = useContext(ProjectorContext);
+    const { setIds } = useContext(ProjectorContext);
+    const { setPoints } = useContext(ProjectorContext);
+    const { setComponents } = useContext(ProjectorContext);
+    const { groups, setGroups } = useContext(ProjectorContext);
+    const { setSilhouettes } = useContext(ProjectorContext);
+    const { setScores } = useContext(ProjectorContext);
+    const { attributes, setAttributes } = useContext(ProjectorContext);
+    const { setPreviewImage } = useContext(ProjectorContext);
 
     const [reductionId, setReductionId] = useState('');
     const [reductions, setReductions] = useState([]);
     const [clusterId, setClusterId] = useState('');
     const [clusters, setClusters] = useState([]);
     const [labelId, setLabelId] = useState('');
-    const [labelsNames, setLabelsNames] = useState([]);
     const [labels, setLabels] = useState([]);
 
     const userId = session.user.email;
@@ -63,8 +62,9 @@ const VisualizationForm = () => {
     };
 
     const fetchReductions = () => {
-        if (updateReductions) {
-            setUpdateReductions(false);
+        if (triggerFetchReductions) {
+            setTriggerFetchReductions(false);
+
             getReductions(userId, experimentId)
                 .then((response) => {
                     const options = response.data.map((option) => {
@@ -99,8 +99,8 @@ const VisualizationForm = () => {
     };
 
     const fetchClusters = () => {
-        if (updateClusters) {
-            setUpdateClusters(false);
+        if (triggerFetchClusters) {
+            setTriggerFetchClusters(false);
 
             getClusters(userId, experimentId)
                 .then((response) => {
@@ -141,8 +141,8 @@ const VisualizationForm = () => {
                     value,
                 }));
 
-                setLabels(response.data);
-                setLabelsNames(options);
+                setLabels(options);
+                setAttributes(response.data);
             })
             .catch((error) => {
                 setOpenMessageBox(true);
@@ -150,129 +150,51 @@ const VisualizationForm = () => {
             });
     };
 
-    const fetchGraphData = () => {
-        if (reductionId && (clusterId === 0 || clusterId)) {
-            Promise.all([
-                getReduction(userId, experimentId, reductionId),
-                getCluster(userId, experimentId, clusterId),
-            ])
+    const fetchReduction = () => {
+        if (reductionId) {
+            getReduction(userId, experimentId, reductionId)
                 .then((response) => {
-                    const [reductionResponse, clusterResponse] = response;
-
-                    const { ids, points } = reductionResponse.data;
-                    const { components } = reductionResponse.data.metadata;
-                    const { groups: traces } = clusterResponse.data;
-                    const { silhouettes, scores } = clusterResponse.data;
-
-                    let scatterGraphData = [];
                     try {
-                        scatterGraphData = ScatterGraphManager(
-                            components,
-                            points,
-                            ids,
-                            traces,
-                        );
+                        const { ids, points } = response.data;
+                        const { components } = response.data.metadata;
+
+                        setIds(ids);
+                        setPoints(points);
+                        setComponents(components);
+
+                        if (groups.length < 1) {
+                            setGroups(Array.from(ids).fill(0));
+                        }
                     } catch (error) {
                         setOpenMessageBox(true);
                         setErrorMessage(
-                            'An error occurred while generating the scatter plot graph',
+                            'Error, the format of the reduction data is not valid',
                         );
                     }
-
-                    let silhouetteGraphData = [];
-                    try {
-                        silhouetteGraphData = SilohouetteGraphManager(
-                            silhouettes,
-                            traces,
-                        );
-                    } catch (error) {
-                        setOpenMessageBox(true);
-                        setErrorMessage(
-                            'An error occurred while generating the silhouette graph',
-                        );
-                    }
-
-                    let barGraphData = [];
-                    try {
-                        barGraphData = BarGraphManager(traces);
-                    } catch (error) {
-                        setOpenMessageBox(true);
-                        setErrorMessage(
-                            'An error occurred while generating the bar graph',
-                        );
-                    }
-
-                    let wordCloudData = [];
-                    try {
-                        wordCloudData = WordCloudManager(labels, traces);
-                    } catch (error) {
-                        setOpenMessageBox(true);
-                        setErrorMessage(
-                            'An error occurred while generating the word cloud graph',
-                        );
-                    }
-
-                    setScatterGraphData(scatterGraphData);
-                    setSilhouetteGraphData(silhouetteGraphData);
-                    setBarGraphData(barGraphData);
-                    setClustersScores(scores);
-                    setWordCloudData(wordCloudData);
                 })
                 .catch((error) => {
                     setOpenMessageBox(true);
                     setErrorMessage(error.response.data.message);
                 });
-        } else if (reductionId && (labelId === 0 || labelId)) {
-            getReduction(userId, experimentId, reductionId)
-                .then((response) => {
-                    const { ids, points } = response.data;
-                    const { components } = response.data.metadata;
-                    const traces = labels.data[labelId];
+        }
+    };
 
-                    let scatterGraphData;
+    const fetchCluster = () => {
+        if (clusterId) {
+            getCluster(userId, experimentId, clusterId)
+                .then((response) => {
                     try {
-                        scatterGraphData = ScatterGraphManager(
-                            components,
-                            points,
-                            ids,
-                            traces,
-                        );
+                        const { groups, silhouettes, scores } = response.data;
+
+                        setGroups(groups);
+                        setSilhouettes(silhouettes);
+                        setScores(scores);
                     } catch (error) {
                         setOpenMessageBox(true);
                         setErrorMessage(
-                            'An error occurred while generating the scatter plot graph',
+                            'Error, the format of the cluster data is not valid',
                         );
                     }
-
-                    setScatterGraphData(scatterGraphData);
-                })
-                .catch((error) => {
-                    setOpenMessageBox(true);
-                    setErrorMessage(error.response.data.message);
-                });
-        } else if (reductionId) {
-            getReduction(userId, experimentId, reductionId)
-                .then((response) => {
-                    const { ids, points } = response.data;
-                    const { components } = response.data.metadata;
-                    const traces = Array.from(points).fill(0);
-
-                    let scatterGraphData;
-                    try {
-                        scatterGraphData = ScatterGraphManager(
-                            components,
-                            points,
-                            ids,
-                            traces,
-                        );
-                    } catch (error) {
-                        setOpenMessageBox(true);
-                        setErrorMessage(
-                            'An error occurred while generating the scatter plot graph',
-                        );
-                    }
-
-                    setScatterGraphData(scatterGraphData);
                 })
                 .catch((error) => {
                     setOpenMessageBox(true);
@@ -287,9 +209,10 @@ const VisualizationForm = () => {
 
     const switchToLabel = () => {
         setClusterId('');
-        setSilhouetteGraphData([]);
-        setBarGraphData([]);
-        setClustersScores({});
+        // setGroups([]);
+        setSilhouettes([]);
+        setScores({});
+        setPreviewImage('');
     };
 
     const handleDeleteReduction = (id) => {
@@ -319,41 +242,49 @@ const VisualizationForm = () => {
     };
 
     useEffect(fetchReductions, [
-        userId,
         experimentId,
-        setOpenMessageBox,
         setErrorMessage,
-        updateReductions,
-        setUpdateReductions,
-        fetchReductions,
+        setOpenMessageBox,
+        setTriggerFetchReductions,
+        triggerFetchReductions,
+        userId,
     ]);
     useEffect(fetchClusters, [
-        userId,
         experimentId,
-        setOpenMessageBox,
         setErrorMessage,
-        updateClusters,
-        setUpdateClusters,
+        setOpenMessageBox,
+        setTriggerFetchClusters,
+        triggerFetchClusters,
+        userId,
     ]);
     useEffect(fetchLabels, [
-        userId,
         experimentId,
-        setOpenMessageBox,
+        setAttributes,
         setErrorMessage,
+        setOpenMessageBox,
+        userId,
     ]);
-    useEffect(fetchGraphData, [
-        userId,
+    useEffect(fetchReduction, [
         experimentId,
+        groups.length,
         reductionId,
-        clusterId,
-        labelId,
-        labels,
-        setScatterGraphData,
-        setSilhouetteGraphData,
-        setOpenMessageBox,
+        setComponents,
         setErrorMessage,
-        setBarGraphData,
-        setClustersScores,
+        setGroups,
+        setIds,
+        setOpenMessageBox,
+        setPoints,
+        userId,
+    ]);
+    useEffect(fetchCluster, [
+        clusterId,
+        experimentId,
+        setErrorMessage,
+        setGroups,
+        setOpenMessageBox,
+        setScores,
+        setSilhouettes,
+        userId,
     ]);
 
     return (
@@ -402,16 +333,20 @@ const VisualizationForm = () => {
                     variant="outlined"
                     margin="dense"
                     fullWidth
-                    {...((labelsNames.length === 0 || !reductionId) && {
+                    {...((labels.length === 0 || !reductionId) && {
                         disabled: true,
                     })}
                 >
                     <InputLabel id="label">Label</InputLabel>
                     <SimpleSelect
                         name="label"
-                        options={labelsNames}
+                        options={labels}
                         value={labelId}
-                        setValue={(event) => setLabelId(event.target.value)}
+                        setValue={(event) => {
+                            const id = event.target.value;
+                            setGroups(attributes.data[id]);
+                            setLabelId(id);
+                        }}
                         onChange={switchToLabel}
                     />
                 </FormControl>

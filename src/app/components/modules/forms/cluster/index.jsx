@@ -31,14 +31,13 @@ const ClusterForm = () => {
     const [session] = useSession();
     const router = useRouter();
 
+    const { setTriggerFetchClusters } = useContext(ProjectorContext);
+
     const { setOpenMessageBox } = useContext(ProjectorContext);
     const { setErrorMessage } = useContext(ProjectorContext);
 
-    const { setUpdateClusters } = useContext(ProjectorContext);
-
-    const monitoringFrequency = 5000;
-    const [monitoringPendingCount, setMonitoringPendingCount] = useState(false);
-    const [previousPendingCount, setPreviousPendingCount] = useState(0);
+    const fetchPendingFrequency = 5000;
+    const [fetchingPendingCount, setFetchingPendingCount] = useState(false);
     const [pendingCount, setPendingCount] = useState(0);
 
     const [submitLoading, setSubmitLoading] = useState(false);
@@ -80,20 +79,25 @@ const ClusterForm = () => {
     };
 
     const fetchPendingCount = () => {
+        setFetchingPendingCount(true);
+
         getPendingClustersCount(userId, experimentId)
             .then((response) => {
-                setPreviousPendingCount(pendingCount);
-                setPendingCount(response.data.count);
+                const { count } = response.data;
+
+                if (pendingCount > 0 && count <= pendingCount) {
+                    setTriggerFetchClusters(true);
+                }
+                setPendingCount(count);
 
                 if (response.data.count > 0) {
-                    // keep fetching
-                    sleep(10000).then(() => fetchPendingCount());
+                    sleep(fetchPendingFrequency).then(fetchPendingCount);
                 } else {
-                    setMonitoringPendingCount(false);
+                    setFetchingPendingCount(false);
                 }
             })
             .catch((error) => {
-                setMonitoringPendingCount(false);
+                setFetchingPendingCount(false);
                 setOpenMessageBox(true);
                 setErrorMessage(error.response.data.message);
             });
@@ -113,38 +117,24 @@ const ClusterForm = () => {
                 humps.decamelize(algorithm, { separator: '_' }),
                 humps.decamelizeKeys(params, { separator: '_' }),
             )
-                .then(() =>
-                    sleep(monitoringFrequency).then(() => {
-                        setSubmitLoading(false);
+                .then(() => {
+                    setSubmitLoading(false);
+                    setPendingCount(pendingCount + 1);
 
-                        setPendingCount(pendingCount + 1);
-
-                        // fetch if not already fetching
-                        if (!monitoringPendingCount) {
-                            fetchPendingCount();
-                        }
-                    }),
-                )
+                    if (!fetchingPendingCount) {
+                        sleep(fetchPendingFrequency).then(fetchPendingCount);
+                    }
+                })
                 .catch((error) => {
+                    setSubmitLoading(false);
                     setOpenMessageBox(true);
                     setErrorMessage(error.response.data.message);
-                    setSubmitLoading(false);
                 });
         }
     };
 
-    useEffect(() => {
-        if (pendingCount <= previousPendingCount) {
-            // update visualization form
-            setUpdateClusters(true);
-        }
-    }, [previousPendingCount, pendingCount, setUpdateClusters]);
-
     useEffect(
-        () => {
-            setMonitoringPendingCount(true);
-            fetchPendingCount();
-        },
+        fetchPendingCount,
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [],
     );

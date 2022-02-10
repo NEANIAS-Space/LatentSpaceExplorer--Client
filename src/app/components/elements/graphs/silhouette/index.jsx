@@ -4,7 +4,11 @@ import ProjectorContext from 'app/contexts/projector';
 import theme from 'styles/theme';
 import { range, average } from 'app/utils/maths';
 
-const SilohouetteGraphManager = (silhouettes, traces) => {
+const DynamicGraph = dynamic(import('react-plotly.js'), {
+    ssr: false,
+});
+
+const SilhouetteGraphManager = (silhouettes, traces) => {
     if (!(silhouettes.length > 0 && traces.length > 0)) {
         return [];
     }
@@ -26,6 +30,7 @@ const SilohouetteGraphManager = (silhouettes, traces) => {
         x: [],
         y: [],
         hovertemplate: '%{x}',
+        name: '',
     };
 
     const graphData = Array.from(symbols).fill(trace);
@@ -37,6 +42,7 @@ const SilohouetteGraphManager = (silhouettes, traces) => {
             graphData[symbolId] = {
                 ...graphData[symbolId],
                 x: [...graphData[symbolId].x, silhouettes[i]],
+                name: traces[i],
             };
         }
     }
@@ -51,10 +57,6 @@ const SilohouetteGraphManager = (silhouettes, traces) => {
 
     return graphData;
 };
-
-const DynamicGraph = dynamic(import('react-plotly.js'), {
-    ssr: false,
-});
 
 const computeAverageLine = (silhouetteGraphData) => {
     let x = [];
@@ -72,15 +74,21 @@ const computeAverageLine = (silhouetteGraphData) => {
 };
 
 const SilhouetteGraph = () => {
-    const { silhouetteGraphData } = useContext(ProjectorContext);
+    const { groups } = useContext(ProjectorContext);
+    const { silhouettes } = useContext(ProjectorContext);
 
+    const [data, setData] = useState([]);
     const [layout, setLayout] = useState();
     const [config, setConfig] = useState({
         displayModeBar: false,
     });
 
     useEffect(() => {
-        const averageLine = computeAverageLine(silhouetteGraphData);
+        setData(SilhouetteGraphManager(silhouettes, groups));
+    }, [silhouettes, groups]);
+
+    useEffect(() => {
+        const averageLine = computeAverageLine(data);
 
         setLayout({
             showlegend: false,
@@ -117,11 +125,11 @@ const SilhouetteGraph = () => {
                 },
             ],
         });
-    }, [silhouetteGraphData]);
+    }, [data]);
 
     return (
         <DynamicGraph
-            data={silhouetteGraphData}
+            data={data}
             layout={layout}
             config={config}
             onUpdate={(figure) => {
@@ -134,4 +142,4 @@ const SilhouetteGraph = () => {
     );
 };
 
-export { SilohouetteGraphManager, SilhouetteGraph };
+export default SilhouetteGraph;

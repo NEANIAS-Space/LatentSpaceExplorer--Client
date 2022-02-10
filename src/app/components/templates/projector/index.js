@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import Grid from '@material-ui/core/Grid';
-import Box from '@material-ui/core/Box';
 import ProjectorLayout from 'app/components/layouts/projector-layout';
 import ProjectorContext from 'app/contexts/projector';
 import SideBar from 'app/components/modules/sidebar';
@@ -9,27 +7,29 @@ import VisualizationForm from 'app/components/modules/forms/visualization';
 import ReductionForm from 'app/components/modules/forms/reduction';
 import ClusterForm from 'app/components/modules/forms/cluster';
 import MessageBox from 'app/components/elements/message-box';
-import { ScatterGraph } from 'app/components/elements/graphs/scatter';
-import { SilhouetteGraph } from 'app/components/elements/graphs/silhouette';
-import { BarGraph } from 'app/components/elements/graphs/bar';
+import ScatterGraph from 'app/components/elements/graphs/scatter';
 import PreviewImage from 'app/components/elements/preview-image';
-import Widget from 'app/components/elements/widget';
 import WordCloudWidget from 'app/components/modules/widgets/wordcloud';
+import BarGraphWidget from 'app/components/modules/widgets/bar';
+import SilhouetteGraphWidget from 'app/components/modules/widgets/silhouette';
+import ScoresWidget from 'app/components/modules/widgets/scores';
 
 const ProjectorTemplate = () => {
     const [openMessageBox, setOpenMessageBox] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
-    const [updateReductions, setUpdateReductions] = useState(false);
-    const [updateClusters, setUpdateClusters] = useState(false);
-
-    const [scatterGraphData, setScatterGraphData] = useState([]);
-    const [silhouetteGraphData, setSilhouetteGraphData] = useState([]);
-    const [barGraphData, setBarGraphData] = useState([]);
-    const [clustersScores, setClustersScores] = useState([]);
-    const [wordCloudData, setWordCloudData] = useState([]);
+    const [triggerFetchReductions, setTriggerFetchReductions] = useState(true);
+    const [triggerFetchClusters, setTriggerFetchClusters] = useState(true);
 
     const [previewImage, setPreviewImage] = useState('');
+
+    const [ids, setIds] = useState([]);
+    const [points, setPoints] = useState([]);
+    const [components, setComponents] = useState(2);
+    const [groups, setGroups] = useState([]);
+    const [silhouettes, setSilhouettes] = useState([]);
+    const [scores, setScores] = useState({});
+    const [attributes, setAttributes] = useState([]);
 
     const handleCloseMessageBox = (event, reason) => {
         if (reason === 'clickaway') {
@@ -52,26 +52,27 @@ const ProjectorTemplate = () => {
         <ProjectorLayout>
             <ProjectorContext.Provider
                 value={{
-                    openMessageBox,
                     setOpenMessageBox,
-                    errorMessage,
                     setErrorMessage,
-                    updateReductions,
-                    setUpdateReductions,
-                    updateClusters,
-                    setUpdateClusters,
-                    scatterGraphData,
-                    setScatterGraphData,
-                    silhouetteGraphData,
-                    setSilhouetteGraphData,
-                    barGraphData,
-                    setBarGraphData,
-                    clustersScores,
-                    setClustersScores,
-                    wordCloudData,
-                    setWordCloudData,
-                    previewImage,
+                    triggerFetchReductions,
+                    setTriggerFetchReductions,
+                    triggerFetchClusters,
+                    setTriggerFetchClusters,
                     setPreviewImage,
+                    ids,
+                    setIds,
+                    points,
+                    setPoints,
+                    components,
+                    setComponents,
+                    groups,
+                    setGroups,
+                    silhouettes,
+                    setSilhouettes,
+                    scores,
+                    setScores,
+                    attributes,
+                    setAttributes,
                 }}
             >
                 <SideBar column={1}>
@@ -82,54 +83,32 @@ const ProjectorTemplate = () => {
                     </>
                 </SideBar>
                 <PrimaryContent>
-                    <ScatterGraph />
+                    <>
+                        {components > 0 &&
+                            points.length > 0 &&
+                            ids.length > 0 &&
+                            groups.length > 0 && (
+                                <ScatterGraph
+                                    components={components}
+                                    points={points}
+                                    ids={ids}
+                                    groups={groups}
+                                />
+                            )}
+                    </>
                 </PrimaryContent>
                 <SideBar column={3}>
                     <>
                         {previewImage && (
                             <PreviewImage imageName={previewImage} />
                         )}
-                        {silhouetteGraphData.length > 0 && (
-                            <Widget title="Silhouettes">
-                                <SilhouetteGraph />
-                            </Widget>
+                        {groups.length > 0 && silhouettes.length > 0 && (
+                            <SilhouetteGraphWidget />
                         )}
-                        {Object.keys(clustersScores).length > 0 && (
-                            <Widget title="Clusters scores">
-                                <>
-                                    <Grid container>
-                                        <Grid item xs={8}>
-                                            Calinski Harabasz:
-                                        </Grid>
-                                        <Grid item xs={4}>
-                                            <Box textAlign="right">
-                                                {clustersScores.calinski_harabasz_score.toFixed(
-                                                    2,
-                                                )}
-                                            </Box>
-                                        </Grid>
-                                    </Grid>
-                                    <Grid container>
-                                        <Grid item xs={8}>
-                                            Davies Bouldin:
-                                        </Grid>
-                                        <Grid item xs={4}>
-                                            <Box textAlign="right">
-                                                {clustersScores.davies_bouldin_score.toFixed(
-                                                    2,
-                                                )}
-                                            </Box>
-                                        </Grid>
-                                    </Grid>
-                                </>
-                            </Widget>
-                        )}
-                        {barGraphData.length > 0 && (
-                            <Widget title="Elements per clusters">
-                                <BarGraph />
-                            </Widget>
-                        )}
-                        {wordCloudData.length > 0 && <WordCloudWidget />}
+                        {Object.keys(scores).length > 0 && <ScoresWidget />}
+                        {groups.length > 0 && <BarGraphWidget />}
+                        {Object.keys(attributes).length > 0 &&
+                            groups.length > 0 && <WordCloudWidget />}
                     </>
                 </SideBar>
                 {renderMessageBox()}

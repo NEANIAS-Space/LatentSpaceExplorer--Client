@@ -1,8 +1,12 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import ProjectorContext from 'app/contexts/projector';
 import theme from 'styles/theme';
 import { occurrences } from 'app/utils/maths';
+
+const DynamicGraph = dynamic(import('react-plotly.js'), {
+    ssr: false,
+});
 
 const BarGraphManager = (traces) => {
     if (!(traces.length > 0)) {
@@ -22,6 +26,7 @@ const BarGraphManager = (traces) => {
         y: [],
         orientation: 'h',
         hovertemplate: '%{x}',
+        name: '',
     };
 
     const graphData = Array.from(symbols).fill(trace);
@@ -30,21 +35,20 @@ const BarGraphManager = (traces) => {
         graphData[id] = {
             ...graphData[id],
             x: [occurrences(traces, symbol)],
-            y: [symbol],
+            y: [symbolsMap.get(symbol)],
             // noisy points
             ...(symbol === -1 && { marker: { color: 'rgb(0, 0, 0)' } }),
+            name: symbol,
         };
     });
 
     return graphData;
 };
 
-const DynamicGraph = dynamic(import('react-plotly.js'), {
-    ssr: false,
-});
-
 const BarGraph = () => {
-    const { barGraphData } = useContext(ProjectorContext);
+    const { groups } = useContext(ProjectorContext);
+
+    const [data, setData] = useState([]);
 
     const [layout, setLayout] = useState({
         showlegend: false,
@@ -64,9 +68,13 @@ const BarGraph = () => {
         displayModeBar: false,
     });
 
+    useEffect(() => {
+        setData(BarGraphManager(groups));
+    }, [groups]);
+
     return (
         <DynamicGraph
-            data={barGraphData}
+            data={data}
             layout={layout}
             config={config}
             onUpdate={(figure) => {
@@ -79,4 +87,4 @@ const BarGraph = () => {
     );
 };
 
-export { BarGraphManager, BarGraph };
+export default BarGraph;
