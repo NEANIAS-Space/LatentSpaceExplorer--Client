@@ -1,8 +1,16 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import ProjectorContext from 'app/contexts/projector';
 
+const DynamicGraph = dynamic(import('react-plotly.js'), {
+    ssr: false,
+});
+
 const ScatterGraphManager = (components, points, ids, traces) => {
+    if (!(points.length > 0 && ids.length > 0 && traces.length > 0)) {
+        return [];
+    }
+
     const is3D = components === 3;
 
     const symbols = [...new Set(traces)];
@@ -26,6 +34,7 @@ const ScatterGraphManager = (components, points, ids, traces) => {
             },
         },
         hovertemplate: '%{text}',
+        name: '',
     };
 
     const graphData = Array.from(symbols).fill(trace);
@@ -45,40 +54,44 @@ const ScatterGraphManager = (components, points, ids, traces) => {
             ...(traces[i] === -1 && {
                 marker: { color: 'rgba(0, 0, 0, 0.75)' },
             }),
+            name: traces[i],
         };
     }
 
     return graphData;
 };
 
-const DynamicGraph = dynamic(import('react-plotly.js'), {
-    ssr: false,
-});
-
 const ScatterGraph = () => {
-    const { scatterGraphData } = useContext(ProjectorContext);
+    const { components } = useContext(ProjectorContext);
+    const { points } = useContext(ProjectorContext);
+    const { ids } = useContext(ProjectorContext);
+    const { groups } = useContext(ProjectorContext);
     const { setPreviewImage } = useContext(ProjectorContext);
+
+    const [data, setData] = useState([]);
 
     const [layout, setLayout] = useState({
         hovermode: 'closest',
     });
-    const [frames, setFrames] = useState(undefined);
+
     const [config, setConfig] = useState(undefined);
 
-    const handlePointClick = (data) => {
-        const imageName = data.points[0].text;
+    const handlePointClick = (d) => {
+        const imageName = d.points[0].text;
         setPreviewImage(`${imageName}`);
     };
 
+    useEffect(() => {
+        setData(ScatterGraphManager(components, points, ids, groups));
+    }, [components, ids, points, groups]);
+
     return (
         <DynamicGraph
-            data={scatterGraphData}
+            data={data}
             layout={layout}
-            frames={frames}
             config={config}
             onUpdate={(figure) => {
                 setLayout(figure.layout);
-                setFrames(figure.frames);
                 setConfig(figure.config);
             }}
             onClick={handlePointClick}
@@ -88,4 +101,4 @@ const ScatterGraph = () => {
     );
 };
 
-export { ScatterGraphManager, ScatterGraph };
+export default ScatterGraph;

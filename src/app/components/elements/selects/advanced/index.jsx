@@ -126,7 +126,7 @@ AdvancedSelect.propTypes = {
         PropTypes.shape({
             id: PropTypes.string,
             algorithm: PropTypes.string,
-            components: PropTypes.int,
+            components: PropTypes.number,
             params: PropTypes.shape({}),
             datetime: PropTypes.string,
         }),

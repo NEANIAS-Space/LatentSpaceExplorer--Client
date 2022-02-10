@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/client';
 import ProjectorContext from 'app/contexts/projector';
 import Image from 'next/image';
-import Widget from 'app/components/modules/widget';
+import Widget from 'app/components/elements/widget';
 import getImage from 'app/api/image';
 import PreviewImageWrapper from './style';
 

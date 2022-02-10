@@ -2,7 +2,7 @@ import { useState, useContext, useReducer, useEffect } from 'react';
 import { useSession } from 'next-auth/client';
 import { useRouter } from 'next/router';
 import ProjectorContext from 'app/contexts/projector';
-import projectorFormReducer from 'app/reducers/projector';
+import projectorFormReducer from 'app/components/modules/forms/reducer';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Typography from '@material-ui/core/Typography';
@@ -10,26 +10,33 @@ import Switch from '@material-ui/core/Switch';
 import Tooltip from '@material-ui/core/Tooltip';
 import Badge from '@material-ui/core/Badge';
 import ScheduleIcon from '@material-ui/icons/Schedule';
-import Widget from 'app/components/modules/widget';
+import Widget from 'app/components/elements/widget';
 import SimpleSelect from 'app/components/elements/selects/simple';
 import Slider from 'app/components/elements/slider';
 import LoadingButton from 'app/components/elements/buttons/loading';
 import { postReduction, getPendingReductionsCount } from 'app/api/reduction';
 import sleep from 'app/utils/chronos';
 import humps from 'humps';
+import {
+    initialFormState,
+    algorithmOptions,
+    componentsOptions,
+    metricOptions,
+    initParamsOptions,
+    affinityOptions,
+} from './init';
 
 const ReductionForm = () => {
     const [session] = useSession();
     const router = useRouter();
 
+    const { setTriggerFetchReductions } = useContext(ProjectorContext);
+
     const { setOpenMessageBox } = useContext(ProjectorContext);
     const { setErrorMessage } = useContext(ProjectorContext);
 
-    const { setUpdateReductions } = useContext(ProjectorContext);
-
-    const monitoringFrequency = 5000;
-    const [monitoringPendingCount, setMonitoringPendingCount] = useState(false);
-    const [previousPendingCount, setPreviousPendingCount] = useState(0);
+    const fetchPendingFrequency = 5000;
+    const [fetchingPendingCount, setFetchingPendingCount] = useState(false);
     const [pendingCount, setPendingCount] = useState(0);
 
     const [submitLoading, setSubmitLoading] = useState(false);
@@ -37,70 +44,10 @@ const ReductionForm = () => {
     const userId = session.user.email;
     const experimentId = router.query.id;
 
-    const initialFormState = {
-        algorithm: 'pca',
-        components: 2,
-        tsne: {
-            perplexity: 10,
-            iterations: 1000,
-            learningRate: 200,
-            metric: 'euclidean',
-            init: 'random',
-        },
-        umap: {
-            neighbors: 15,
-            minDistance: 0.1,
-            metric: 'euclidean',
-            densmap: false,
-        },
-        spectralEmbedding: {
-            affinity: 'nearest_neighbors',
-        },
-        isomap: {
-            neighbors: 15,
-            metric: 'euclidean',
-        },
-    };
-
     const [formState, dispatch] = useReducer(
         projectorFormReducer,
         initialFormState,
     );
-
-    const algorithmOptions = [
-        { id: 'pca', value: 'pca' },
-        { id: 'tsne', value: 'tsne' },
-        { id: 'umap', value: 'umap' },
-        { id: 'truncatedSvd', value: 'truncated svd' },
-        { id: 'spectralEmbedding', value: 'spectral embedding' },
-        { id: 'isomap', value: 'isomap' },
-        { id: 'mds', value: 'mds' },
-    ];
-
-    const componentsOptions = [
-        { id: 2, value: 2 },
-        { id: 3, value: 3 },
-    ];
-
-    const metricOptions = [
-        { id: 'euclidean', value: 'euclidean' },
-        { id: 'cosine', value: 'cosine' },
-        { id: 'minkowski', value: 'minkowski' },
-        { id: 'manhattan', value: 'manhattan' },
-        { id: 'chebyshev', value: 'chebyshev' },
-        { id: 'canberra', value: 'canberra' },
-        { id: 'mahalanobis', value: 'mahalanobis' },
-    ];
-
-    const initParamsOptions = [
-        { id: 'random', value: 'random' },
-        { id: 'pca', value: 'pca' },
-    ];
-
-    const affinityOptions = [
-        { id: 'nearest_neighbors', value: 'nearest neighbors' },
-        { id: 'rbf', value: 'rbf' },
-    ];
 
     const handleCommonParams = (event) => {
         dispatch({
@@ -135,20 +82,26 @@ const ReductionForm = () => {
     };
 
     const fetchPendingCount = () => {
+        setFetchingPendingCount(true);
+
         getPendingReductionsCount(userId, experimentId)
             .then((response) => {
-                setPreviousPendingCount(pendingCount);
-                setPendingCount(response.data.count);
+                const { count } = response.data;
 
-                if (response.data.count > 0) {
-                    // keep fetching
-                    sleep(10000).then(() => fetchPendingCount());
+                if (pendingCount > 0 && count <= pendingCount) {
+                    setTriggerFetchReductions(true);
+                }
+
+                setPendingCount(count);
+
+                if (count > 0) {
+                    sleep(fetchPendingFrequency).then(fetchPendingCount);
                 } else {
-                    setMonitoringPendingCount(false);
+                    setFetchingPendingCount(false);
                 }
             })
             .catch((error) => {
-                setMonitoringPendingCount(false);
+                setFetchingPendingCount(false);
                 setOpenMessageBox(true);
                 setErrorMessage(error.response.data.message);
             });
@@ -169,38 +122,24 @@ const ReductionForm = () => {
                 components,
                 humps.decamelizeKeys(params, { separator: '_' }),
             )
-                .then(() =>
-                    sleep(monitoringFrequency).then(() => {
-                        setSubmitLoading(false);
+                .then(() => {
+                    setSubmitLoading(false);
+                    setPendingCount(pendingCount + 1);
 
-                        setPendingCount(pendingCount + 1);
-
-                        // fetch if not already fetching
-                        if (!monitoringPendingCount) {
-                            fetchPendingCount();
-                        }
-                    }),
-                )
+                    if (!fetchingPendingCount) {
+                        sleep(fetchPendingFrequency).then(fetchPendingCount);
+                    }
+                })
                 .catch((error) => {
+                    setSubmitLoading(false);
                     setOpenMessageBox(true);
                     setErrorMessage(error.response.data.message);
-                    setSubmitLoading(false);
                 });
         }
     };
 
-    useEffect(() => {
-        if (pendingCount <= previousPendingCount) {
-            // update visualization form
-            setUpdateReductions(true);
-        }
-    }, [previousPendingCount, pendingCount, setUpdateReductions]);
-
     useEffect(
-        () => {
-            setMonitoringPendingCount(true);
-            fetchPendingCount();
-        },
+        fetchPendingCount,
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [],
     );

@@ -24,6 +24,7 @@ const MessageBox = ({ message, severity, open, handleClose }) => (
                 </IconButton>
             </>
         }
+        autoHideDuration={10000}
     >
         <Alert onClose={handleClose} severity={severity} elevation={1}>
             {message}
