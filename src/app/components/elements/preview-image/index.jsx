@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Widget from 'app/components/elements/widget';
 import getImage from 'app/api/image';
 import PreviewImageWrapper from './style';
+import { getExperimentImages } from 'app/api/experiment';
 
 const PreviewImage = ({ imageName }) => {
     const [session] = useSession();
@@ -19,13 +20,31 @@ const PreviewImage = ({ imageName }) => {
 
     const userId = session.user.email;
     const experimentId = router.query.id;
+    const [dirName, setDirName] = useState('');
+    
+    const fetchDirName = getExperimentImages(userId, experimentId)
+        .then(
+            (result) => {
+                console.log(`fetch ${dirName}`)
+                setDirName(result.data)
+            }
+        );
 
+    useEffect(() => {
+        console.log(`Useffect ${dirName}`)
+        if( dirName == ''){
+            fetchDirName
+        console.log(`Fine Useffect ${dirName}`)
+        }
+    },[]);
+    
     const fetchImage = () => {
         setImageUrl('');
 
-        getImage(userId, experimentId, imageName)
+        getImage(dirName, imageName)
             .then((response) => {
-                setImageUrl(response.data);
+                //console.log(response.data);
+                setImageUrl(response);
             })
             .catch((error) => {
                 setOpenMessageBox(true);

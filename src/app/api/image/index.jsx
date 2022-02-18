@@ -1,10 +1,9 @@
 import api from 'app/api';
 
-const getImage = async (userId, experimentId, imageName) => {
-    const image = await api(userId).get(
-        `experiments/${experimentId}/images/${imageName}`,
-    );
-
+const getImage = async (dirName, imageName) => {
+    imageName = imageName.replace('+', '%2B');
+    const image = `https://files.dev.neanias.eu/apps/files_sharing/publicpreview/${dirName}?file=/${imageName}&a=true`;
+    console.log(image);
     return image;
 };
 
