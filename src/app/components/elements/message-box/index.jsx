@@ -34,7 +34,7 @@ const MessageBox = ({ message, severity, open, handleClose }) => (
 
 MessageBox.propTypes = {
     message: PropTypes.string.isRequired,
-    severity: PropTypes.oneOf(['info', 'success', 'warining', 'error']),
+    severity: PropTypes.oneOf(['info', 'success', 'warning', 'error']),
     open: PropTypes.bool.isRequired,
     handleClose: PropTypes.func.isRequired,
 };
