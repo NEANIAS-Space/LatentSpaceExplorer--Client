@@ -21,7 +21,8 @@ const ProjectorTemplate = () => {
     const [triggerFetchReductions, setTriggerFetchReductions] = useState(true);
     const [triggerFetchClusters, setTriggerFetchClusters] = useState(true);
 
-    const [previewImage, setPreviewImage] = useState('');
+    const [previewImagesFolderName, setPreviewImagesFolderName] = useState('');
+    const [previewImageName, setPreviewImageName] = useState('');
 
     const [ids, setIds] = useState([]);
     const [points, setPoints] = useState([]);
@@ -58,7 +59,8 @@ const ProjectorTemplate = () => {
                     setTriggerFetchReductions,
                     triggerFetchClusters,
                     setTriggerFetchClusters,
-                    setPreviewImage,
+                    setPreviewImagesFolderName,
+                    setPreviewImageName,
                     ids,
                     setIds,
                     points,
@@ -99,8 +101,11 @@ const ProjectorTemplate = () => {
                 </PrimaryContent>
                 <SideBar column={3}>
                     <>
-                        {previewImage && (
-                            <PreviewImage imageName={previewImage} />
+                        {previewImagesFolderName && previewImageName && (
+                            <PreviewImage
+                                imagesFolderName={previewImagesFolderName}
+                                imageName={previewImageName}
+                            />
                         )}
                         {groups.length > 0 && silhouettes.length > 0 && (
                             <SilhouetteGraphWidget />

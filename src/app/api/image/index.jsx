@@ -8,4 +8,12 @@ const getImage = async (userId, experimentId, imageName) => {
     return image;
 };
 
-export default getImage;
+const getImagesFolderName = async (userId, experimentId) => {
+    const publicImagesFolderName = await api(userId).get(
+        `/experiments/${experimentId}/images/folder-name`,
+    );
+
+    return publicImagesFolderName;
+};
+
+export { getImage, getImagesFolderName };

@@ -8,6 +8,7 @@ import {
 } from 'app/api/reduction';
 import { getClusters, getCluster, deleteCluster } from 'app/api/cluster';
 import { getLabels } from 'app/api/label';
+import { getImagesFolderName } from 'app/api/image';
 import { FormControl, InputLabel } from '@material-ui/core';
 import ProjectorContext from 'app/contexts/projector';
 import Widget from 'app/components/elements/widget';
@@ -33,7 +34,8 @@ const VisualizationForm = () => {
     const { setSilhouettes } = useContext(ProjectorContext);
     const { setScores } = useContext(ProjectorContext);
     const { attributes, setAttributes } = useContext(ProjectorContext);
-    const { setPreviewImage } = useContext(ProjectorContext);
+    const { setPreviewImagesFolderName } = useContext(ProjectorContext);
+    const { setPreviewImageName } = useContext(ProjectorContext);
 
     const [reductionId, setReductionId] = useState('');
     const [reductions, setReductions] = useState([]);
@@ -150,6 +152,19 @@ const VisualizationForm = () => {
             });
     };
 
+    const fetchImagesFolderName = () => {
+        getImagesFolderName(userId, experimentId)
+            .then((response) => {
+                const imagesFolderName = response.data.images_folder_name;
+
+                setPreviewImagesFolderName(imagesFolderName);
+            })
+            .catch((error) => {
+                setOpenMessageBox(true);
+                setErrorMessage(error.response.data.message);
+            });
+    };
+
     const fetchReduction = () => {
         if (reductionId) {
             getReduction(userId, experimentId, reductionId)
@@ -212,7 +227,8 @@ const VisualizationForm = () => {
         // setGroups([]);
         setSilhouettes([]);
         setScores({});
-        setPreviewImage('');
+        setPreviewImagesFolderName('');
+        setPreviewImageName('');
     };
 
     const handleDeleteReduction = (id) => {
@@ -262,6 +278,13 @@ const VisualizationForm = () => {
         setAttributes,
         setErrorMessage,
         setOpenMessageBox,
+        userId,
+    ]);
+    useEffect(fetchImagesFolderName, [
+        experimentId,
+        setErrorMessage,
+        setOpenMessageBox,
+        setPreviewImagesFolderName,
         userId,
     ]);
     useEffect(fetchReduction, [
