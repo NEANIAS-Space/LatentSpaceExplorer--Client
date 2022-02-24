@@ -4,8 +4,7 @@ import Widget from 'app/components/elements/widget';
 import PreviewImageWrapper from './style';
 
 const PreviewImage = ({ imagesFolderName, imageName }) => {
-    const imageUrl = `https://files.dev.neanias.eu/apps/files_sharing/publicpreview/${imagesFolderName}?file=/${imageName}&a=true`;
-
+    const imageUrl = `https://files.dev.neanias.eu/apps/files_sharing/publicpreview/${imagesFolderName}?file=/${encodeURIComponent(imageName)}&a=true`;
     return (
         <Widget title={imageName}>
             <PreviewImageWrapper>
