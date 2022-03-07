@@ -7,3 +7,5 @@ src/.next
 
 src/cypress/screenshots/*
 src/cypress/videos/*
+
+**/*.zip
