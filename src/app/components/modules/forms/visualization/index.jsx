@@ -224,10 +224,8 @@ const VisualizationForm = () => {
 
     const switchToLabel = () => {
         setClusterId('');
-        // setGroups([]);
         setSilhouettes([]);
         setScores({});
-        setPreviewImagesFolderName('');
         setPreviewImageName('');
     };
 
