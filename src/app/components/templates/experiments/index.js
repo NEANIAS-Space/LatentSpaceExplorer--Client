@@ -94,7 +94,16 @@ const ExperimentTemplate = () => {
                     {experiment.metadata.architecture.name}
                 </TableCell>
                 <TableCell align="center">
+                    {JSON.stringify(experiment.metadata.architecture.filters)}
+                </TableCell>
+                <TableCell align="center">
                     {experiment.metadata.architecture.latent_dim}
+                </TableCell>
+                <TableCell align="center">
+                    {experiment.metadata.training.epochs}
+                </TableCell>
+                <TableCell align="center">
+                    {experiment.metadata.training.batch_size}
                 </TableCell>
                 <TableCell align="center">
                     <ConfirmButton
@@ -146,7 +155,14 @@ const ExperimentTemplate = () => {
                                         Architecture
                                     </TableCell>
                                     <TableCell align="center">
+                                        Filters
+                                    </TableCell>
+                                    <TableCell align="center">
                                         Latent dim.
+                                    </TableCell>
+                                    <TableCell align="center">Epochs</TableCell>
+                                    <TableCell align="center">
+                                        Batch size
                                     </TableCell>
                                     <TableCell align="center">Delete</TableCell>
                                 </TableRow>
