@@ -177,7 +177,7 @@ const ClusterForm = () => {
                                 value={formState.dbscan.eps}
                                 step={0.01}
                                 min={0.01}
-                                max={10}
+                                max={10000}
                                 setValue={handleAlgorithmParams}
                             />
                         </FormControl>
@@ -244,7 +244,7 @@ const ClusterForm = () => {
                                 }
                                 step={1}
                                 min={1}
-                                max={100}
+                                max={10000}
                                 setValue={handleAlgorithmParams}
                             />
                         </FormControl>
@@ -427,7 +427,7 @@ const ClusterForm = () => {
                                 name="nClusters"
                                 value={formState.birch.nClusters}
                                 step={1}
-                                min={2}
+                                min={0}
                                 max={100}
                                 setValue={handleAlgorithmParams}
                             />
@@ -437,7 +437,7 @@ const ClusterForm = () => {
                             <Slider
                                 name="threshold"
                                 value={formState.birch.threshold}
-                                step={0.1}
+                                step={0.01}
                                 min={0}
                                 max={1}
                                 setValue={handleAlgorithmParams}
