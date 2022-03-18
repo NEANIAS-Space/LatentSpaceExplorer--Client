@@ -14,43 +14,34 @@ const HomeTemplate = () => (
     <DefaultLayout>
         <PrimaryContent padding>
             <>
-                <Typography variant="h2" align="center">
+            <Typography variant="h2" align="center">
                     Welcome to Latent Space Explorer
                 </Typography>
                 <br />
                 <Typography variant="body1" paragraph align="justify">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                    do eiusmod tempor incididunt ut labore et dolore magna
-                    aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-                    ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                    Duis aute irure dolor in reprehenderit in voluptate velit
-                    esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
-                    occaecat cupidatat non proident, sunt in culpa qui officia
-                    deserunt mollit anim id est laborum. Lorem ipsum dolor sit
-                    amet, consectetur adipiscing elit, sed do eiusmod tempor
-                    incididunt ut labore et dolore magna aliqua. Ut enim ad
-                    minim veniam, quis nostrud exercitation ullamco laboris nisi
-                    ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-                    reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.
+                    Latent Space Explorer (LSE) support analysis of image datasets 
+                    via unsupervised machine learning methods. It allows to extract 
+                    a compact representation from data by representation learning 
+                    models (e.g. autoencoders). The information extracted can be 
+                    then visualized using the projector. The latter allows visualizing the data in a
+                    2D or 3D space in an interactive fashion. The system then 
+                    allows performing clustering algorithms to detect potentially
+                    relevant ways to group images and to support the definition 
+                    of novel classification schemes.
                     <br />
                     <br />
-                    Excepteur sint occaecat cupidatat non proident, sunt in
-                    culpa qui officia deserunt mollit anim id est laborum. Lorem
-                    ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                    eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                    Ut enim ad minim veniam, quis nostrud exercitation ullamco
-                    laboris nisi ut aliquip ex ea commodo consequat. Duis aute
-                    irure dolor in reprehenderit in voluptate velit esse cillum
-                    dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-                    cupidatat non proident, sunt in culpa qui officia deserunt
-                    mollit anim id est laborum.
-                </Typography>
-                <Typography variant="h5" align="center" paragraph>
-                    In order to use this service follow the{' '}
+                    In order to use the tool please follow the&nbsp;
                     <Link href="https://docs.neanias.eu/projects/s3-service/en/latest/services/latent_space_explorer.html">
-                        guide
+                        documentation
                     </Link>
+                    <br />
+                    To produce representations please use&nbsp;
+                    <Link href="https://gitlab.neanias.eu/s3-service/latent-space-explorer/generator">
+                        latent space generator
+                    </Link>
+                    <br />
+                    If you want to play with the projector on some demo experiments,
+                    you could check the ones below.
                 </Typography>
                 <Link href="/experiments" color="primary" underline="none">
                     <Button
@@ -87,22 +78,10 @@ const HomeTemplate = () => (
                             MNIST
                         </Typography>
                         <Typography variant="body1" paragraph align="justify">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elit, sed do eiusmod tempor incididunt ut labore et
-                            dolore magna aliqua. Ut enim ad minim veniam, quis
-                            nostrud exercitation ullamco laboris nisi ut aliquip
-                            ex ea commodo consequat. Duis aute irure dolor in
-                            reprehenderit in voluptate velit esse cillum dolore
-                            eu fugiat nulla pariatur. Excepteur sint occaecat
-                            cupidatat non proident, sunt in culpa qui officia
-                            deserunt mollit anim id est laborum.
-                            <br />
-                            <br />
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elit, sed do eiusmod tempor incididunt ut labore et
-                            dolore magna aliqua. Ut enim ad minim veniam, quis
-                            nostrud exercitation ullamco laboris nisi ut aliquip
-                            ex ea commodo consequat.
+                            MNIST is a classic dataset for image classification.
+                            It consists of 28x28 grayscale images of handwritten digits.
+                            Analysing the dataset using the latent space explorer
+                            allows to detect non trivial features in the dataset.
                         </Typography>
                         <Link href="#">Download example</Link>
                     </Grid>
@@ -114,22 +93,12 @@ const HomeTemplate = () => (
                             CelebA
                         </Typography>
                         <Typography variant="body1" paragraph align="justify">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elit, sed do eiusmod tempor incididunt ut labore et
-                            dolore magna aliqua. Ut enim ad minim veniam, quis
-                            nostrud exercitation ullamco laboris nisi ut aliquip
-                            ex ea commodo consequat. Duis aute irure dolor in
-                            reprehenderit in voluptate velit esse cillum dolore
-                            eu fugiat nulla pariatur. Excepteur sint occaecat
-                            cupidatat non proident, sunt in culpa qui officia
-                            deserunt mollit anim id est laborum.
-                            <br />
-                            <br />
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elit, sed do eiusmod tempor incididunt ut labore et
-                            dolore magna aliqua. Ut enim ad minim veniam, quis
-                            nostrud exercitation ullamco laboris nisi ut aliquip
-                            ex ea commodo consequat.
+                            CelebA is a dataset of over 200,000 celebrity images.
+                            In this particular experiment we subsampled the dataset
+                            to a smaller size of 10000 images.
+                            The dataset is particularily familiar to all users
+                            and so it is a good starting point for understanding the
+                            latent space explorer.
                         </Typography>
                         <Link href="#">Download example</Link>
                     </Grid>
@@ -173,22 +142,12 @@ const HomeTemplate = () => (
                             EuroSAT
                         </Typography>
                         <Typography variant="body1" paragraph align="justify">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elit, sed do eiusmod tempor incididunt ut labore et
-                            dolore magna aliqua. Ut enim ad minim veniam, quis
-                            nostrud exercitation ullamco laboris nisi ut aliquip
-                            ex ea commodo consequat. Duis aute irure dolor in
-                            reprehenderit in voluptate velit esse cillum dolore
-                            eu fugiat nulla pariatur. Excepteur sint occaecat
-                            cupidatat non proident, sunt in culpa qui officia
-                            deserunt mollit anim id est laborum.
-                            <br />
-                            <br />
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elit, sed do eiusmod tempor incididunt ut labore et
-                            dolore magna aliqua. Ut enim ad minim veniam, quis
-                            nostrud exercitation ullamco laboris nisi ut aliquip
-                            ex ea commodo consequat.
+                            EuroSAT is a satellite image dataset.
+                            It consists of images of the European Space Agency satellites.
+                            The peculiarity of that dataset is that has 13 channels
+                            (RGB, NIR, SWIR1, SWIR2, ...).
+                            Analysing the dataset using the latent space explorer
+                            
                         </Typography>
                         <Link href="#">Download example</Link>
                     </Grid>
