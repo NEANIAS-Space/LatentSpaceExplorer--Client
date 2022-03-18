@@ -83,7 +83,7 @@ const HomeTemplate = () => (
                             Analysing the dataset using the latent space explorer
                             allows to detect non trivial features in the dataset.
                         </Typography>
-                        <Link href="#">Download example</Link>
+                        <Link href="https://files.neanias.eu/s/td8nH8AdCAsPiWY">Download example</Link>
                     </Grid>
                 </Grid>
                 <ZigZagLineSeparator />
@@ -100,7 +100,7 @@ const HomeTemplate = () => (
                             and so it is a good starting point for understanding the
                             latent space explorer.
                         </Typography>
-                        <Link href="#">Download example</Link>
+                        <Link href="https://files.neanias.eu/s/7rCESLoTFRiCfij">Download example</Link>
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <Paper elevation={3}>
@@ -149,7 +149,7 @@ const HomeTemplate = () => (
                             Analysing the dataset using the latent space explorer
                             
                         </Typography>
-                        <Link href="#">Download example</Link>
+                        <Link href="https://files.neanias.eu/s/aXtYRikD8XpaGad">Download example</Link>
                     </Grid>
                 </Grid>
                 <ZigZagLineSeparator />
