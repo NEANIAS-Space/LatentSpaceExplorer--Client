@@ -36,6 +36,6 @@ COPY ./src/cypress /app/cypress
 
 ENV ENVIRONMENT staging
 
-COPY ./src/.env.staging .
+COPY ./src/.env.staging ./.env.local
 
 CMD ["npm", "run", "dev"]
