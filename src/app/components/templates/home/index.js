@@ -14,19 +14,19 @@ const HomeTemplate = () => (
     <DefaultLayout>
         <PrimaryContent padding>
             <>
-            <Typography variant="h2" align="center">
+                <Typography variant="h2" align="center">
                     Welcome to Latent Space Explorer
                 </Typography>
                 <br />
                 <Typography variant="body1" paragraph align="justify">
-                    Latent Space Explorer (LSE) support analysis of image datasets 
-                    via unsupervised machine learning methods. It allows to extract 
-                    a compact representation from data by representation learning 
-                    models (e.g. autoencoders). The information extracted can be 
+                    Latent Space Explorer (LSE) support analysis of image datasets
+                    via unsupervised machine learning methods. It allows to extract
+                    a compact representation from data by representation learning
+                    models (e.g. autoencoders). The information extracted can be
                     then visualized using the projector. The latter allows visualizing the data in a
-                    2D or 3D space in an interactive fashion. The system then 
+                    2D or 3D space in an interactive fashion. The system then
                     allows performing clustering algorithms to detect potentially
-                    relevant ways to group images and to support the definition 
+                    relevant ways to group images and to support the definition
                     of novel classification schemes.
                     <br />
                     <br />
@@ -147,7 +147,8 @@ const HomeTemplate = () => (
                             The peculiarity of that dataset is that has 13 channels
                             (RGB, NIR, SWIR1, SWIR2, ...).
                             Analysing the dataset using the latent space explorer
-                            
+                            could suggest new classification schemes.
+
                         </Typography>
                         <Link href="https://files.neanias.eu/s/aXtYRikD8XpaGad">Download example</Link>
                     </Grid>
