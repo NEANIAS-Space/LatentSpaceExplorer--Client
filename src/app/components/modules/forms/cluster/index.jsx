@@ -31,14 +31,14 @@ const ClusterForm = () => {
     const [session] = useSession();
     const router = useRouter();
 
-    const { setTriggerFetchClusters } = useContext(ProjectorContext);
-
     const { setOpenMessageBox } = useContext(ProjectorContext);
     const { setErrorMessage } = useContext(ProjectorContext);
 
+    const { setTriggerFetchClusters } = useContext(ProjectorContext);
+
     const fetchPendingFrequency = 5000;
-    const [fetchingPendingCount, setFetchingPendingCount] = useState(false);
     const [pendingCount, setPendingCount] = useState(0);
+    const [fetchingPendingCount, setFetchingPendingCount] = useState(false);
 
     const [submitLoading, setSubmitLoading] = useState(false);
 
@@ -85,9 +85,10 @@ const ClusterForm = () => {
             .then((response) => {
                 const { count } = response.data;
 
-                if (pendingCount > 0 && count <= pendingCount) {
+                if (count <= pendingCount) {
                     setTriggerFetchClusters(true);
                 }
+
                 setPendingCount(count);
 
                 if (response.data.count > 0) {
