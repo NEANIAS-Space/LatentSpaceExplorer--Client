@@ -36,6 +36,6 @@ COPY ./src/cypress /app/cypress
 
 ENV ENVIRONMENT local
 
-COPY ./src/.env.local ./.env
+COPY ./src/.env.local ./.env.local
 
 CMD ["npm", "run", "dev"]

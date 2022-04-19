@@ -30,14 +30,14 @@ const ReductionForm = () => {
     const [session] = useSession();
     const router = useRouter();
 
-    const { setTriggerFetchReductions } = useContext(ProjectorContext);
-
     const { setOpenMessageBox } = useContext(ProjectorContext);
     const { setErrorMessage } = useContext(ProjectorContext);
 
+    const { setTriggerFetchReductions } = useContext(ProjectorContext);
+
     const fetchPendingFrequency = 5000;
-    const [fetchingPendingCount, setFetchingPendingCount] = useState(false);
     const [pendingCount, setPendingCount] = useState(0);
+    const [fetchingPendingCount, setFetchingPendingCount] = useState(false);
 
     const [submitLoading, setSubmitLoading] = useState(false);
 
@@ -88,7 +88,7 @@ const ReductionForm = () => {
             .then((response) => {
                 const { count } = response.data;
 
-                if (pendingCount > 0 && count <= pendingCount) {
+                if (count <= pendingCount) {
                     setTriggerFetchReductions(true);
                 }
 

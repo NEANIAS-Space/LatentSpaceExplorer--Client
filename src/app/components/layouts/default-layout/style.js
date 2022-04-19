@@ -5,7 +5,8 @@ const DefaultLayoutWrapper = styled.div`
     display: grid;
     grid-template-rows: 64px auto;
     grid-template-columns: 15% auto 15%;
-    overflow: hidden;
+    // overflow: hidden;
+    overflow-y: auto;
 `;
 
 export default DefaultLayoutWrapper;

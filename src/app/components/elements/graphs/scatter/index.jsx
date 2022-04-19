@@ -66,7 +66,7 @@ const ScatterGraph = () => {
     const { points } = useContext(ProjectorContext);
     const { ids } = useContext(ProjectorContext);
     const { groups } = useContext(ProjectorContext);
-    const { setPreviewImage } = useContext(ProjectorContext);
+    const { setPreviewImageName } = useContext(ProjectorContext);
 
     const [data, setData] = useState([]);
 
@@ -78,7 +78,7 @@ const ScatterGraph = () => {
 
     const handlePointClick = (d) => {
         const imageName = d.points[0].text;
-        setPreviewImage(`${imageName}`);
+        setPreviewImageName(`${imageName}`);
     };
 
     useEffect(() => {

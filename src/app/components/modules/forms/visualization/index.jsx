@@ -1,13 +1,8 @@
 import { useState, useEffect, useContext } from 'react';
 import { useSession } from 'next-auth/client';
 import { useRouter } from 'next/router';
-import {
-    getReductions,
-    getReduction,
-    deleteReduction,
-} from 'app/api/reduction';
-import { getClusters, getCluster, deleteCluster } from 'app/api/cluster';
-import { getLabels } from 'app/api/label';
+import { getReduction, deleteReduction } from 'app/api/reduction';
+import { getCluster, deleteCluster } from 'app/api/cluster';
 import { FormControl, InputLabel } from '@material-ui/core';
 import ProjectorContext from 'app/contexts/projector';
 import Widget from 'app/components/elements/widget';
@@ -21,134 +16,24 @@ const VisualizationForm = () => {
     const { setOpenMessageBox } = useContext(ProjectorContext);
     const { setErrorMessage } = useContext(ProjectorContext);
 
-    const { triggerFetchReductions, setTriggerFetchReductions } =
-        useContext(ProjectorContext);
-    const { triggerFetchClusters, setTriggerFetchClusters } =
-        useContext(ProjectorContext);
-
+    const { reductions, setReductions } = useContext(ProjectorContext);
+    const { clusters, setClusters } = useContext(ProjectorContext);
+    const { labels } = useContext(ProjectorContext);
+    const { attributes } = useContext(ProjectorContext);
     const { setIds } = useContext(ProjectorContext);
     const { setPoints } = useContext(ProjectorContext);
     const { setComponents } = useContext(ProjectorContext);
     const { groups, setGroups } = useContext(ProjectorContext);
     const { setSilhouettes } = useContext(ProjectorContext);
     const { setScores } = useContext(ProjectorContext);
-    const { attributes, setAttributes } = useContext(ProjectorContext);
-    const { setPreviewImage } = useContext(ProjectorContext);
+    const { setPreviewImageName } = useContext(ProjectorContext);
 
     const [reductionId, setReductionId] = useState('');
-    const [reductions, setReductions] = useState([]);
     const [clusterId, setClusterId] = useState('');
-    const [clusters, setClusters] = useState([]);
     const [labelId, setLabelId] = useState('');
-    const [labels, setLabels] = useState([]);
 
     const userId = session.user.email;
     const experimentId = router.query.id;
-
-    const compare = (object1, object2) => {
-        if (object1.algorithm > object2.algorithm) {
-            return 1;
-        }
-        if (object1.algorithm < object2.algorithm) {
-            return -1;
-        }
-        if (object1.components > object2.components) {
-            return 1;
-        }
-        if (object1.components < object2.components) {
-            return -1;
-        }
-        return 0;
-    };
-
-    const fetchReductions = () => {
-        if (triggerFetchReductions) {
-            setTriggerFetchReductions(false);
-
-            getReductions(userId, experimentId)
-                .then((response) => {
-                    const options = response.data.map((option) => {
-                        const {
-                            id,
-                            metadata: {
-                                algorithm,
-                                components,
-                                params,
-                                start_datetime: datetime,
-                            },
-                        } = option;
-
-                        return {
-                            id,
-                            algorithm,
-                            components,
-                            params,
-                            datetime,
-                        };
-                    });
-
-                    options.sort(compare);
-
-                    setReductions(options);
-                })
-                .catch((error) => {
-                    setOpenMessageBox(true);
-                    setErrorMessage(error.response.data.message);
-                });
-        }
-    };
-
-    const fetchClusters = () => {
-        if (triggerFetchClusters) {
-            setTriggerFetchClusters(false);
-
-            getClusters(userId, experimentId)
-                .then((response) => {
-                    const options = response.data.map((option) => {
-                        const {
-                            id,
-                            metadata: {
-                                algorithm,
-                                params,
-                                start_datetime: datetime,
-                            },
-                        } = option;
-
-                        return {
-                            id,
-                            algorithm,
-                            params,
-                            datetime,
-                        };
-                    });
-
-                    options.sort(compare);
-
-                    setClusters(options);
-                })
-                .catch((error) => {
-                    setOpenMessageBox(true);
-                    setErrorMessage(error.response.data.message);
-                });
-        }
-    };
-
-    const fetchLabels = () => {
-        getLabels(userId, experimentId)
-            .then((response) => {
-                const options = response.data.index.map((value, id) => ({
-                    id,
-                    value,
-                }));
-
-                setLabels(options);
-                setAttributes(response.data);
-            })
-            .catch((error) => {
-                setOpenMessageBox(true);
-                setErrorMessage(error.response.data.message);
-            });
-    };
 
     const fetchReduction = () => {
         if (reductionId) {
@@ -209,10 +94,9 @@ const VisualizationForm = () => {
 
     const switchToLabel = () => {
         setClusterId('');
-        // setGroups([]);
         setSilhouettes([]);
         setScores({});
-        setPreviewImage('');
+        setPreviewImageName('');
     };
 
     const handleDeleteReduction = (id) => {
@@ -241,32 +125,9 @@ const VisualizationForm = () => {
             });
     };
 
-    useEffect(fetchReductions, [
-        experimentId,
-        setErrorMessage,
-        setOpenMessageBox,
-        setTriggerFetchReductions,
-        triggerFetchReductions,
-        userId,
-    ]);
-    useEffect(fetchClusters, [
-        experimentId,
-        setErrorMessage,
-        setOpenMessageBox,
-        setTriggerFetchClusters,
-        triggerFetchClusters,
-        userId,
-    ]);
-    useEffect(fetchLabels, [
-        experimentId,
-        setAttributes,
-        setErrorMessage,
-        setOpenMessageBox,
-        userId,
-    ]);
     useEffect(fetchReduction, [
         experimentId,
-        groups.length,
+        groups,
         reductionId,
         setComponents,
         setErrorMessage,

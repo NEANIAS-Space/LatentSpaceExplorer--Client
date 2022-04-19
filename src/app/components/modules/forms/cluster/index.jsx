@@ -31,14 +31,14 @@ const ClusterForm = () => {
     const [session] = useSession();
     const router = useRouter();
 
-    const { setTriggerFetchClusters } = useContext(ProjectorContext);
-
     const { setOpenMessageBox } = useContext(ProjectorContext);
     const { setErrorMessage } = useContext(ProjectorContext);
 
+    const { setTriggerFetchClusters } = useContext(ProjectorContext);
+
     const fetchPendingFrequency = 5000;
-    const [fetchingPendingCount, setFetchingPendingCount] = useState(false);
     const [pendingCount, setPendingCount] = useState(0);
+    const [fetchingPendingCount, setFetchingPendingCount] = useState(false);
 
     const [submitLoading, setSubmitLoading] = useState(false);
 
@@ -85,9 +85,10 @@ const ClusterForm = () => {
             .then((response) => {
                 const { count } = response.data;
 
-                if (pendingCount > 0 && count <= pendingCount) {
+                if (count <= pendingCount) {
                     setTriggerFetchClusters(true);
                 }
+
                 setPendingCount(count);
 
                 if (response.data.count > 0) {
@@ -177,7 +178,7 @@ const ClusterForm = () => {
                                 value={formState.dbscan.eps}
                                 step={0.01}
                                 min={0.01}
-                                max={10}
+                                max={10000}
                                 setValue={handleAlgorithmParams}
                             />
                         </FormControl>
@@ -244,7 +245,7 @@ const ClusterForm = () => {
                                 }
                                 step={1}
                                 min={1}
-                                max={100}
+                                max={10000}
                                 setValue={handleAlgorithmParams}
                             />
                         </FormControl>
@@ -427,7 +428,7 @@ const ClusterForm = () => {
                                 name="nClusters"
                                 value={formState.birch.nClusters}
                                 step={1}
-                                min={2}
+                                min={0}
                                 max={100}
                                 setValue={handleAlgorithmParams}
                             />
@@ -437,7 +438,7 @@ const ClusterForm = () => {
                             <Slider
                                 name="threshold"
                                 value={formState.birch.threshold}
-                                step={0.1}
+                                step={0.01}
                                 min={0}
                                 max={1}
                                 setValue={handleAlgorithmParams}
