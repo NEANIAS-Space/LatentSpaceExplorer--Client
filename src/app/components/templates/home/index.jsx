@@ -26,22 +26,20 @@ const HomeTemplate = () => (
                     then visualized using the projector. The latter allows visualizing the data in a
                     2D or 3D space in an interactive fashion. The system then
                     allows performing clustering algorithms to detect potentially
-                    relevant ways to group images and to support the definition
+                    relevant ways to group data and to support the definition
                     of novel classification schemes.
-                    <br />
-                    <br />
+                    <br /><br />
+                    You could find an overview of the service in the&nbsp;
+                    <Link href="https://www.youtube.com/watch?v=-otNS3N2hyo">
+                        intro video
+                    </Link>
+                    <br /><br />
                     In order to use the tool please follow the&nbsp;
                     <Link href="https://docs.neanias.eu/projects/s3-service/en/latest/services/latent_space_explorer.html">
                         documentation
                     </Link>
-                    <br />
-                    To produce representations please use&nbsp;
-                    <Link href="https://gitlab.neanias.eu/s3-service/latent-space-explorer/generator">
-                        latent space generator
-                    </Link>
-                    <br />
-                    If you want to play with the projector on some demo experiments,
-                    you could check the ones below.
+                    <br /><br />
+                    If you want to play with the projector on some demo experiments you will find those on your experiment page
                 </Typography>
                 <Link href="/experiments" color="primary" underline="none">
                     <Button
@@ -77,13 +75,18 @@ const HomeTemplate = () => (
                         <Typography variant="h3" align="right">
                             MNIST
                         </Typography>
+                        <br />
+                        <br />
                         <Typography variant="body1" paragraph align="justify">
                             MNIST is a classic dataset for image classification.
                             It consists of 28x28 grayscale images of handwritten digits.
                             Analysing the dataset using the latent space explorer
-                            allows to detect non trivial features in the dataset.
+                            allows to have a structured overview of the content of the dataset.
+                            Clustering methods like dbscan could help to detect outliers
+                            and clean the dataset.
+                            The analysis could help to understand what the neural network
+                            learn from the data and correct hidden bias.
                         </Typography>
-                        <Link href="https://files.neanias.eu/s/td8nH8AdCAsPiWY">Download example</Link>
                     </Grid>
                 </Grid>
                 <ZigZagLineSeparator />
@@ -92,15 +95,26 @@ const HomeTemplate = () => (
                         <Typography variant="h3" align="left">
                             CelebA
                         </Typography>
+                        <br />
+                        <br />
                         <Typography variant="body1" paragraph align="justify">
                             CelebA is a dataset of over 200,000 celebrity images.
                             In this particular experiment we subsampled the dataset
                             to a smaller size of 10000 images.
+                            <br />
                             The dataset is particularily familiar to all users
                             and so it is a good starting point for understanding the
                             latent space explorer.
+                            <br />
+                            CelebA it's a challenging dataset to be represented, because there
+                            are a lot of visual features to understand: accessories, skin tone,
+                            hair type, eyes, and so on.
+                            <br />
+                            Furthermore the background and the style of the photos could be
+                            learned as a features. If the data are organized depending on the
+                            background, then probably the neural network doesn't learn properly
+                            what we're looking for.
                         </Typography>
-                        <Link href="https://files.neanias.eu/s/7rCESLoTFRiCfij">Download example</Link>
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <Paper elevation={3}>
@@ -141,16 +155,24 @@ const HomeTemplate = () => (
                         <Typography variant="h3" align="right">
                             EuroSAT
                         </Typography>
+                        <br />
+                        <br />
                         <Typography variant="body1" paragraph align="justify">
-                            EuroSAT is a satellite image dataset.
-                            It consists of images of the European Space Agency satellites.
-                            The peculiarity of that dataset is that has 13 channels
-                            (RGB, NIR, SWIR1, SWIR2, ...).
-                            Analysing the dataset using the latent space explorer
-                            could suggest new classification schemes.
+                            EuroSAT is collection of images captured by European Space Agency satellites
+                            using multiple instruments.
+                            <br />
+                            Images has a shape of 64x64 pixels and those present more than
+                            3 standard RGB channels. 13 spectral bands from 443 nm to 2190 form a datacube.
+                            <br />
+                            This dataset gets closer to the final use case of the latent space explorer,
+                            that was intended to explore astronomical images taken by non standard instruments.
+                            <br />
+                            It consists of 10 classes: Industrial Buildings, Residential Buildings, Annual Crop,
+                            Permanent Crop, River, Sea/Lake, Herbaceous Vegetation, Highway, Pasture, and Forest.
+                            <br />
+                            Analysing the dataset using the latent space explorer could suggest new classification schemes.
 
                         </Typography>
-                        <Link href="https://files.neanias.eu/s/aXtYRikD8XpaGad">Download example</Link>
                     </Grid>
                 </Grid>
                 <ZigZagLineSeparator />
