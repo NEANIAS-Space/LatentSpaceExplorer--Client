@@ -34,8 +34,4 @@ COPY ./src/public /app/public
 COPY ./src/styles /app/styles
 COPY ./src/cypress /app/cypress
 
-ENV ENVIRONMENT local
-
-COPY ./src/.env.local ./.env.local
-
 CMD ["npm", "run", "dev"]
