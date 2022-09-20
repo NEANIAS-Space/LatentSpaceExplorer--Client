@@ -2,9 +2,15 @@ import PropTypes from 'prop-types';
 import Image from 'next/image';
 import Widget from 'app/components/elements/widget';
 import PreviewImageWrapper from './style';
+import getConfig from 'next/config';
+
+const {
+    publicRuntimeConfig: { processEnv },
+} = getConfig();
 
 const PreviewImage = ({ imagesFolderName, imageName }) => {
-    const imageBaseUrl = process.env.NEXT_PUBLIC_NEXTCLOUD_URL;
+    const { NEXT_PUBLIC_NEXTCLOUD_URL } = processEnv;
+    const imageBaseUrl = NEXT_PUBLIC_NEXTCLOUD_URL;
     const imagePreviewPath = '/apps/files_sharing/publicpreview/';
     const imageEncodedName = encodeURIComponent(imageName);
     const imageUrlParams = `?file=/${imageEncodedName}&a=true`;

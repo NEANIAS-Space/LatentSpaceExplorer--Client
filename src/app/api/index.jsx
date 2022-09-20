@@ -1,9 +1,17 @@
 import axios from 'axios';
+import getConfig from 'next/config';
+
+const {
+    publicRuntimeConfig: { processEnv },
+} = getConfig();
+
 
 const api = (userId) => {
+    const { NEXT_PUBLIC_SERVER_URL } = processEnv;
+
     const url = process.browser
         ? '/server'
-        : process.env.NEXT_PUBLIC_SERVER_URL;
+        : NEXT_PUBLIC_SERVER_URL;
 
     const args = {
         baseURL: url,

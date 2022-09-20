@@ -6,8 +6,9 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import { Provider as SessionProvider } from 'next-auth/client';
 import Auth from 'app/utils/authorization';
 import theme from 'styles/theme';
+import App from 'next/app'
 
-const App = ({ Component, pageProps }) => {
+function MyApp({ Component, pageProps }) {
     useEffect(() => {
         // Remove the server-side injected CSS.
         const jssStyles = document.querySelector('#jss-server-side');
@@ -42,11 +43,19 @@ const App = ({ Component, pageProps }) => {
     );
 };
 
-App.propTypes = {
+MyApp.getInitialProps = async (appContext) => {
+    // calls page's `getInitialProps` and fills `appProps.pageProps`
+    const appProps = await App.getInitialProps(appContext);
+    return { ...appProps }
+}
+
+
+/*App.propTypes = {
     Component: PropTypes.elementType.isRequired,
     pageProps: PropTypes.shape({
         session: PropTypes.shape({}),
     }).isRequired,
 };
+*/
 
-export default App;
+export default MyApp;
